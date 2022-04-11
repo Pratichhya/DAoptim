@@ -1,0 +1,32 @@
+{
+    "alpha": 0.01,
+    "base_lr": 0.001,
+    "batchsize": 9,
+    "data_folder": "/share/projects/erasmus/pratichhya_sharma/version00/data_loader/",
+    "epoch": 20,
+    "lambda_t": 0.5,
+    "lr_param": {
+        "gamma": 0.001,
+        "lr": 0.01,
+        "power": 0.75
+    },
+    "mode": {
+        "1": "training_source",
+        "2": "training_target",
+        "3": "testing"
+    },
+    "model": "UNet",
+    "model_path": "/share/projects/erasmus/pratichhya_sharma/version00/model/",
+    "n_channel": 3,
+    "n_classes": 2,
+    "num_iterations": 5000,
+    "optim_params": {
+        "lr": 0.01,
+        "momentum": 0.9,
+        "nesterov": true,
+        "weight_decay": 0.0005
+    },
+    "patchsize": 128,
+    "reg_m": 0.5,
+    "test_interval": 50
+}
