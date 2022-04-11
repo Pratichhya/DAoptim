@@ -1,14 +1,14 @@
 
 {
-    "alpha": 0.01,
-    "base_lr": 1e-3,
-    "batchsize": 6,
-    "data_folder": "/share/projects/erasmus/pratichhya_sharma/version00/data_loader/",
+    "alpha": 0.08,
+    "base_lr": 5e-4,
+    "batchsize": 12,
+    "data_folder": "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/data_loader/",
     "epoch": 50,
-    "lambda_t": 0.5,
+    "lambda_t": 0.4,
     "lr_param": {
         "gamma": 0.001,
-        "lr": 1e-3,
+        "lr": 5e-4,
         "power": 0.75
     },
     "mode": {
@@ -17,20 +17,20 @@
         "3": "testing"
     },
     "model": "UNet",
-    "model_path": "/share/projects/erasmus/pratichhya_sharma/version00/model/",
+    "model_path": "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/model/",
     "n_channel": 3,
     "n_classes": 1,
-    "num_iterations": 500,
+    "num_iterations": 300,
     "optim_params": {
-        "lr": 1e-3,
+        "lr": 5e-4,
         "momentum": 0.66,
         "nesterov": true,
         "weight_decay": 0.0005
     },
     "patchsize": 256,
     "reg_m": 0.5,
-    "subset_folder": "/share/projects/erasmus/pratichhya_sharma/version00/data_loader/subset",
-    "eval_output":"/share/projects/erasmus/pratichhya_sharma/version00/data_loader/eval_output",
+    "subset_folder": "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/data_loader/subset",
+    "eval_output":"/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/data_loader/eval_output",
     "test_interval": 50,
-    "valid_ratio": 0.8
+    "valid_ratio": 0.7
 }

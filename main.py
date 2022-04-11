@@ -14,7 +14,7 @@ import gc
 
 # reading config file
 with open(
-    "/share/projects/erasmus/pratichhya_sharma/version00/utils/config.json",
+    "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/config.json",
     "r",
 ) as read_file:
     config = json.load(read_file)
@@ -39,7 +39,7 @@ def set_seed(seed):
 # net.load_state_dict(torch.load(config["model_path"] + "noDA_wien.pt"))
 
 from seg_model_smp.models_predefined import segmentation_models_pytorch as psmp
-net = psmp.UnetPlusPlus(
+net = psmp.Unet(
     encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
     encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
     in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
@@ -135,11 +135,11 @@ def main(
         
         if the_current_loss >= the_last_loss:
             trigger_times += 1
-            torch.save(net.state_dict(), config["model_path"] + "es_trig1_weinv3.pt")
+            torch.save(net.state_dict(), config["model_path"] + "es_wientuned1.pt")
             print("trigger times:", trigger_times)
             if trigger_times == patience:
                 print("Early stopping!\nStart to test process.")
-                torch.save(net.state_dict(), config["model_path"] + "es_wienv3.pt")
+                torch.save(net.state_dict(), config["model_path"] + "es_wienTuned2.pt")
                 break
         else:
             print(f"trigger times: {trigger_times}")
@@ -149,7 +149,7 @@ def main(
 #         # lrs.append(optimizer.param_groups[0]["lr"])
         # print("learning rates are:",lrs
     print("finished")
-    torch.save(net.state_dict(), config["model_path"] + "DA_wienv3.pt")
+    torch.save(net.state_dict(), config["model_path"] + "DA_wientuned.pt")
     gc.collect()
     torch.cuda.empty_cache()
 

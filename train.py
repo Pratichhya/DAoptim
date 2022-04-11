@@ -25,7 +25,7 @@ from utils import eval_metrics
 
 # reading config file
 with open(
-    "/share/projects/erasmus/pratichhya_sharma/version00/utils/config.json",
+    "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/utils/config.json",
     "r",
 ) as read_file:
     config = json.load(read_file)
