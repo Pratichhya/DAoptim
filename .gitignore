@@ -1,0 +1,8 @@
+*.tif
+*.TIF
+*.TIFF
+*.pt
+*.pkl
+*.ipynb
+__pycache__
+
