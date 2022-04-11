@@ -1,0 +1,67 @@
+all functions in small letters if needed then with underscore
+all classes are in sentence case
+all returned variables stored in full capital
+
+source patches only= 6090 
+source after agumented source image is= 18270 
+
+
+#steps i followed in deep learning
+- fetch the data
+- load and process training and testing dataste
+- finalize the dataloader
+- define your network
+- define a loss function
+- training the network in training set
+
+
+#for tunneling jupyterlab from cluster
+- install miniconda in server ur location
+- create ur conda environment
+- install jupyterlab
+- jupyter lab --no-browser
+- back to local machine execute this line ssh -N -L 8888:localhost:8888 {user}@{server_ip}
+
+#for screening
+- screen -S name
+- screen -r
+- screen 
+- kill name
+
+
+
+# count number of zero and ones between two classes 
+# numpy array for entire dataset
+# introduce epoch in the workflow
+# train validation split 
+# check how schedular is updating learning rate
+# kanxa helped to work a way for removing 0's dataset with many zeros
+# ask for data
+# Hyperparameter testing for lr, reg,alpha,lamda
+# used the later received data as target and again test on it
+# batch normalization is already there in the unet architecture
+# equal number of source and target patches
+# introduce early stopping
+# figure out if one hot encoding is needed with the dice loss (seems like no)
+# test training on source and testing on target to know if domain adaptation is needed 
+# reinitialing in data loader wala implement garne
+# though unsupervised but check with available labels to know the performance of the model i.e loss over the target
+# prepare kind of basic intention slides
+# show comparative images
+# autocast
+
+# comparative study for different loss
+# request for unbalanced dataset
+# test on unbalanced samples
+# try downloading and saving the entire predicted image preserving spatial information
+# adapt every thing to files
+# finalize the tasks
+
+# git in ur command line
+# fix kappa formula ........couldnot i dont know why formula is same
+# prepare presentation 
+# what is deepcopy used for
+# try deeplabv3
+ 
+
+
