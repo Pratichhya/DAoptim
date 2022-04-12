@@ -40,7 +40,7 @@ else:
     device = torch.device('cpu')
 model = UNet(config["n_channel"], config["n_classes"])
 # Choose whatever GPU device number you want
-model.load_state_dict(torch.load(config["model_path"] + "es_trig1_weinv3.pt"))
+model.load_state_dict(torch.load(config["model_path"] + "es_wientuned1.pt"))
 # model.load_state_dict(checkpoint['state_dict'], strict=False)
 
 # Make sure to call input = input.to(device) on any input tensors that you feed to the model
@@ -92,5 +92,5 @@ def predict():
 
 if __name__ == "__main__":
     wandb.login()
-    wandb.init(project="server")
+    wandb.init(project="pred_test")
     predict()

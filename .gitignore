@@ -8,3 +8,5 @@ __pycache__
 *.zip
 *.npy
 *.ipynb_checkpoints
+/wandb/
+/output_tif/
