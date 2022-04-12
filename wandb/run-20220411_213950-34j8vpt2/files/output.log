@@ -1,0 +1,47 @@
+
+Buckle up, here with start the journey🚲
+----------------------ready to use dataset--------------
+Found already existing npy
+shape of Xs_train:  (3610, 3, 256, 256)
+shape of Ys_train:  (3610, 1, 256, 256)
+shape of Xt_train:  (3610, 3, 256, 256)
+shape of Yt_train:  (3610, 1, 256, 256)
+--------------------------------------------------------------------
+Number of source training examples: 2166
+Number of source validation examples: 1444
+Finally atleast train and valid source dataloader section works 😌
+--------------------------------------------------------------------
+ Shape of Xt_train is:(3610, 3, 256, 256)
+  0%|                                                                                                                                | 0/130 [00:00<?, ?it/s]
+--------------------------------------------------------------------
+Number of target training examples: 2166
+Number of target validation examples: 1444
+Finally atleast train and valid target dataloader section works 😌
+length of train source:136, lenth of train target is 136
+length of validation source:91, lenth of validation target is 91
+The model has 32,521,105 trainable parameters
+
+
+
+
+
+
+
+
+
+
+
+
+ 32%|█████████████████████████████████████▌                                                                                 | 41/130 [00:24<00:53,  1.66it/s]
+Traceback (most recent call last):
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/main.py", line 163, in <module>
+    main(net)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/main.py", line 107, in main
+    train_loss, acc_mat = Train.train_epoch(net,optimizer, source_dataloader, target_dataloader)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train.py", line 95, in train_epoch
+    total_loss.backward()
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/_tensor.py", line 307, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph, inputs=inputs)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/autograd/__init__.py", line 154, in backward
+    Variable._execution_engine.run_backward(
+KeyboardInterrupt

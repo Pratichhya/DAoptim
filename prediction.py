@@ -13,17 +13,23 @@ import gc
 from data_loader.dataset_ot import Dataset
 from utils import eval_metrics
 from model.unet import UNet
-
+# from seg_model_smp.models_predefined import segmentation_models_pytorch as psmp
+# model = psmp.UnetPlusPlus(
+#      encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+#      encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
+#      in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+#      classes=1,                      # model output channels (number of classes in your dataset)
+#  )
 print("ok till here 1")
 with open(
-    "/share/projects/erasmus/pratichhya_sharma/version00/utils/config.json",
+    "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/utils/config.json",
     "r",
 ) as read_file:
     config = json.load(read_file)
 
 
 model_path = config["model_path"]
-prediction_path = ("/share/projects/erasmus/pratichhya_sharma/version00/prediction/")
+prediction_path = ("/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/predictions")
 
 
 # Load
@@ -34,7 +40,7 @@ else:
     device = torch.device('cpu')
 model = UNet(config["n_channel"], config["n_classes"])
 # Choose whatever GPU device number you want
-model.load_state_dict(torch.load(config["model_path"] + "es_trig7.pt"))
+model.load_state_dict(torch.load(config["model_path"] + "es_trig1_weinv3.pt"))
 # model.load_state_dict(checkpoint['state_dict'], strict=False)
 
 # Make sure to call input = input.to(device) on any input tensors that you feed to the model

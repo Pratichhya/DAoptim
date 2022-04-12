@@ -1,0 +1,53 @@
+
+Buckle up, here with start the journey🚲
+----------------------ready to use dataset--------------
+Found already existing npy
+shape of Xs_train:  (3610, 3, 256, 256)
+shape of Ys_train:  (3610, 1, 256, 256)
+shape of Xt_train:  (3610, 3, 256, 256)
+shape of Yt_train:  (3610, 1, 256, 256)
+--------------------------------------------------------------------
+Number of source training examples: 2166
+Number of source validation examples: 1444
+Finally atleast train and valid source dataloader section works 😌
+--------------------------------------------------------------------
+ Shape of Xt_train is:(3610, 3, 256, 256)
+--------------------------------------------------------------------
+Number of target training examples: 2166
+Number of target validation examples: 1444
+Finally atleast train and valid target dataloader section works 😌
+length of train source:217, lenth of train target is 217
+length of validation source:145, lenth of validation target is 145
+The model has 26,078,609 trainable parameters
+----------------------Traning phase-----------------------------
+  0%|                                                                                                                                                                 | 0/300 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/main.py", line 163, in <module>
+    main(net)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/main.py", line 107, in main
+    train_loss, acc_mat = Train.train_epoch(net,optimizer, source_dataloader, target_dataloader)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train.py", line 65, in train_epoch
+    g_xt, f_g_xt = net(xt)  # target embedded data
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/seg_model_smp/models_predefined/segmentation_models_pytorch/base/model.py", line 31, in forward
+    decoder_output = self.decoder(*features)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/seg_model_smp/models_predefined/segmentation_models_pytorch/decoders/unetplusplus/decoder.py", line 129, in forward
+    output = self.blocks[f"x_{depth_idx}_{depth_idx}"](features[depth_idx], features[depth_idx + 1])
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/seg_model_smp/models_predefined/segmentation_models_pytorch/decoders/unetplusplus/decoder.py", line 40, in forward
+    x = self.conv1(x)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/container.py", line 141, in forward
+    input = module(input)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/conv.py", line 446, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/conv.py", line 442, in _conv_forward
+    return F.conv2d(input, weight, bias, self.stride,
+RuntimeError: CUDA out of memory. Tried to allocate 72.00 MiB (GPU 0; 15.78 GiB total capacity; 4.07 GiB already allocated; 9.69 MiB free; 4.07 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

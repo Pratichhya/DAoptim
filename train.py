@@ -118,7 +118,7 @@ class Train:
             transfer_losses += transfer_loss.detach().cpu().numpy()
             target_losses += target_loss.detach().cpu().numpy()
             
-            del xs, xt, ys,yt
+            del xs, xt, ys,yt,f_g_xs,f_g_xt
             torch.cuda.empty_cache()
             wandb.log({'train_Loss': total_loss,'train_F1': f1_source_step,'train_acc':acc_step,'train_IoU':IoU_step,'f1_target': f1_target,'acc_target':acc_target,'IoU_target':IoU_target,'classifier_loss':classifier_loss,'transfer_loss':transfer_loss,'target_loss':target_loss})
             # wandb.log({'train_Loss': training_losses/config["num_iterations"],'train_F1': f1_source/config["num_iterations"],'train_acc':acc/config["num_iterations"],'train_IoU':IoU/config["num_iterations"],'f1_target': f1_targets/config["num_iterations"],'acc_target':acc_tr/config["num_iterations"],'IoU_target':IoU_tr/config["num_iterations"],'classifier_loss':classifier_losses/config["num_iterations"],'transfer_loss':transfer_losses/config["num_iterations"],'target_loss':target_losses/config["num_iterations"]})
@@ -228,7 +228,7 @@ class Train:
                     images_gt = wandb.Image(gt, caption="Top: Output, Bottom: Input")
                     wandb.log({"Ground truth": images_gt,"Prediction": images_pred})
                     
-                    del val_xs, val_xt, val_ys,val_yt 
+                    del val_xs, val_xt, val_ys,val_yt,val_f_g_xt,val_g_xs 
                     torch.cuda.empty_cache()
 
                 wandb.log({'val_train_Loss': eval_total_loss,'val_train_F1': f1_source_step,'val_train_acc':acc_step,'val_train_IoU':IoU_step,'val_f1_target': val_f1_target,'val_acc_target':val_acc_target,'val_IoU_target':val_IoU_target,'val_classifier_loss':eval_classifier_loss,'val_transfer_loss':eval_transfer_loss,'val_target_loss':eval_target_loss})

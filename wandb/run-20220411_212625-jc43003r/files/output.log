@@ -1,0 +1,84 @@
+
+Buckle up, here with start the journey🚲
+----------------------ready to use dataset--------------
+Found already existing npy
+shape of Xs_train:  (3610, 3, 256, 256)
+shape of Ys_train:  (3610, 1, 256, 256)
+shape of Xt_train:  (3610, 3, 256, 256)
+shape of Yt_train:  (3610, 1, 256, 256)
+--------------------------------------------------------------------
+Number of source training examples: 2166
+Number of source validation examples: 1444
+Finally atleast train and valid source dataloader section works 😌
+--------------------------------------------------------------------
+ Shape of Xt_train is:(3610, 3, 256, 256)
+  0%|                                                                                           | 0/160 [00:00<?, ?it/s]
+--------------------------------------------------------------------
+Number of target training examples: 2166
+Number of target validation examples: 1444
+Finally atleast train and valid target dataloader section works 😌
+length of train source:136, lenth of train target is 136
+length of validation source:91, lenth of validation target is 91
+The model has 24,436,369 trainable parameters
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 99%|███████████████████████████████████████████████████████████████████████████████▉ | 158/160 [01:14<00:00,  2.09it/s]
+Training loss in average for epoch 1 is 615.0482434809207
+Training F1 in average for epoch 1 is 0.46847567781805993
+Training Accuracy in average for epoch 1 is 0.636888611316681
+Training IOU in average for epoch 1 is 0.3087380693294108
+Training K in average for epoch 1 is 1.3768736608326435
+100%|█████████████████████████████████████████████████████████████████████████████████| 160/160 [01:15<00:00,  2.12it/s]
+
+
+
+
+
+
+
+
+
+
+ 95%|████████████████████████████████████████████████████████████████████████████▉    | 152/160 [00:21<00:01,  7.40it/s]
+100%|█████████████████████████████████████████████████████████████████████████████████| 160/160 [00:22<00:00,  7.11it/s]
+Traceback (most recent call last):
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/main.py", line 163, in <module>
+    main(net)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/main.py", line 119, in main
+    print(f"Evaluation F1 in average for epoch {str(e)} is {acc_mat[0]}")
+UnboundLocalError: local variable 'acc_mat' referenced before assignment

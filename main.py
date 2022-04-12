@@ -7,14 +7,14 @@ import wandb
 import numpy as np
 import os
 
-# from model.unet import UNet
+from model.unet import UNet
 from train import Train
 from data_loader.dataset_ot import Dataset
 import gc
 
 # reading config file
 with open(
-    "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/config.json",
+    "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/utils/config.json",
     "r",
 ) as read_file:
     config = json.load(read_file)
@@ -35,16 +35,15 @@ def set_seed(seed):
 
 
 # set network
-# net = UNet(config["n_channel"], config["n_classes"])
-# net.load_state_dict(torch.load(config["model_path"] + "noDA_wien.pt"))
+net = UNet(config["n_channel"], config["n_classes"])
+#net.load_state_dict(torch.load(config["model_path"] + "noDA_wien.pt"))
 
-from seg_model_smp.models_predefined import segmentation_models_pytorch as psmp
-net = psmp.Unet(
-    encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
-    encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
-    in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
-    classes=1,                      # model output channels (number of classes in your dataset)
-)
+#from seg_model_smp.models_predefined import segmentation_models_pytorch as psmp
+#net = psmp.Unet(    encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+ #   encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
+  #  in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+   # classes=1,                      # model output channels (number of classes in your dataset)
+#)
 net.cuda()
 
 saving_interval = 10
@@ -99,9 +98,10 @@ def main(
         optimizer, [300, 1000, 20000], gamma=schedule_param["gamma"]
     )
     
-    patience = 7
+    patience = 5
     the_last_loss = 100
     trigger_times = 0
+    test_f1 = 0
     for e in range(1, NUM_EPOCHS + 1):
         print("----------------------Traning phase-----------------------------")
         train_loss, acc_mat = Train.train_epoch(net,optimizer, source_dataloader, target_dataloader)
@@ -114,12 +114,12 @@ def main(
         # (total/batch)*epoch=iteration
         del train_loss,acc_mat
         print("----------------------Evaluation phase-----------------------------")
-        valid_loss, acc_mat = Train.eval_epoch(e, net, source_dataloader, target_dataloader)
+        valid_loss, val_acc_mat = Train.eval_epoch(e, net, source_dataloader, target_dataloader)
         print(f"Evaluation loss in average for epoch {str(e)} is {valid_loss}")
-        print(f"Evaluation F1 in average for epoch {str(e)} is {acc_mat[0]}")
-        print(f"Evaluation Accuracy in average for epoch {str(e)} is {acc_mat[1]}")
-        print(f"Evaluation IOU in average for epoch {str(e)} is {acc_mat[2]}")
-        print(f"Evaluation K in average for epoch {str(e)} is {acc_mat[3]}")
+        print(f"Evaluation F1 in average for epoch {str(e)} is {val_acc_mat[0]}")
+        print(f"Evaluation Accuracy in average for epoch {str(e)} is {val_acc_mat[1]}")
+        print(f"Evaluation IOU in average for epoch {str(e)} is {val_acc_mat[2]}")
+        print(f"Evaluation K in average for epoch {str(e)} is {val_acc_mat[3]}")
         # wandb.log({'Val_Loss': valid_loss,'Val_F1': acc_mat[0],'Val_acc':acc_mat[1],'Val_IoU':acc_mat[2],'Val_Kappa':acc_mat[3]}, step = e)
 
         # Decay Learning Rate kanxi: check this
@@ -135,12 +135,13 @@ def main(
         
         if the_current_loss >= the_last_loss:
             trigger_times += 1
-            torch.save(net.state_dict(), config["model_path"] + "es_wientuned1.pt")
+            if test_f1 <= val_acc_mat[0]:
+                test_f1 = val_acc_mat[0]
+                torch.save(net.state_dict(), config["model_path"] + "f1greater2.pt")
             print("trigger times:", trigger_times)
             if trigger_times == patience:
                 print("Early stopping!\nStart to test process.")
-                torch.save(net.state_dict(), config["model_path"] + "es_wienTuned2.pt")
-                break
+                torch.save(net.state_dict(), config["model_path"] + "es_wienTuned3.pt")
         else:
             print(f"trigger times: {trigger_times}")
             the_last_loss = the_current_loss
@@ -149,7 +150,7 @@ def main(
 #         # lrs.append(optimizer.param_groups[0]["lr"])
         # print("learning rates are:",lrs
     print("finished")
-    torch.save(net.state_dict(), config["model_path"] + "DA_wientuned.pt")
+    torch.save(net.state_dict(), config["model_path"] + "DA_wientuned4.pt")
     gc.collect()
     torch.cuda.empty_cache()
 

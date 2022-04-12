@@ -24,7 +24,7 @@ from .preprocess import PreProcess
 # from one_hot import OneHotEncoding
 
 # reading config file
-with open("/share/projects/erasmus/pratichhya_sharma/version00/utils/config.json","r",) as read_file:
+with open("/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/utils/config.json","r",) as read_file:
     config = json.load(read_file)
 
 class Dataset():
@@ -312,8 +312,8 @@ class Dataset():
             print(f'Number of source training examples: {len(self.source_train_partly)}')
             print(f'Number of source validation examples: {len(self.source_valid_partly)}')
             #create dataloader
-            self.source_dataloader = DataLoader(self.source_train_partly,batch_size=config["batchsize"])
-            self.valid_source_dataloader = DataLoader(self.source_valid_partly,batch_size=config["batchsize"])
+            self.source_dataloader = DataLoader(self.source_train_partly,batch_size=config["batchsize"],shuffle = True)
+            self.valid_source_dataloader = DataLoader(self.source_valid_partly,batch_size=config["batchsize"],shuffle = True)
             print("Finally atleast train and valid source dataloader section works 😌 ")
             
             
@@ -331,8 +331,8 @@ class Dataset():
             print(f'Number of target training examples: {len(self.target_train_partly)}')
             print(f'Number of target validation examples: {len(self.target_valid_partly)}')
             #create dataloader
-            self.target_dataloader = DataLoader(self.target_train_partly,batch_size=config["batchsize"]) 
-            self.valid_target_dataloader = DataLoader(self.target_valid_partly,batch_size=config["batchsize"])
+            self.target_dataloader = DataLoader(self.target_train_partly,batch_size=config["batchsize"],shuffle = True) 
+            self.valid_target_dataloader = DataLoader(self.target_valid_partly,batch_size=config["batchsize"],shuffle = True)
             print("Finally atleast train and valid target dataloader section works 😌 ")
             
             
@@ -393,7 +393,7 @@ class Dataset():
             self.tensor_xp = torch.Tensor(self.Xtest.astype(np.float16)) 
             self.tensor_yp = torch.Tensor(self.Ytest.astype(np.float16)) 
             self.tensor_test = TensorDataset(self.tensor_xp,self.tensor_yp) 
-            self.test_dataloader = DataLoader(self.tensor_test,batch_size=config["batchsize"]) 
+            self.test_dataloader = DataLoader(self.tensor_test, batch_size=4) 
             print("Finally atleast test dataloader section works 😌")
         else:
             print("Please be sure you know what you are doing👀")

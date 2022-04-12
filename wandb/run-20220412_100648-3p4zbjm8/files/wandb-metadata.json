@@ -1,0 +1,24 @@
+{
+    "os": "Linux-5.10.0-13-amd64-x86_64-with-glibc2.31",
+    "python": "3.9.7",
+    "heartbeatAt": "2022-04-12T08:06:50.477426",
+    "startedAt": "2022-04-12T08:06:48.855067",
+    "docker": null,
+    "gpu": "NVIDIA GeForce GTX TITAN X",
+    "gpu_count": 1,
+    "cpu_count": 40,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/prediction.py",
+    "codePath": "prediction.py",
+    "git": {
+        "remote": "git@github.com:Pratichhya/DAoptim.git",
+        "commit": "7e1242bf2dc0ef24adf5a741572442418cc3963b"
+    },
+    "email": "mepratichhya@gmail.com",
+    "root": "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim",
+    "host": "dmis",
+    "username": "e2008982",
+    "executable": "/share/projects/erasmus/pratichhya_sharma/app/bin/python"
+}

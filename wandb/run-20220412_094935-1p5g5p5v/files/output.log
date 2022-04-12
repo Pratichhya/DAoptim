@@ -1,0 +1,33 @@
+
+Buckle up, here with start the journey🚲
+----------------------ready to use dataset--------------
+Found already existing npy
+shape of Xs_train:  (3610, 3, 256, 256)
+shape of Ys_train:  (3610, 1, 256, 256)
+shape of Xt_train:  (3610, 3, 256, 256)
+shape of Yt_train:  (3610, 1, 256, 256)
+Found already existing npy
+shape of Xtest:  (1083, 3, 256, 256)
+shape of Ytest:  (1083, 1, 256, 256)
+Traceback (most recent call last):
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/prediction.py", line 96, in <module>
+    predict()
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/prediction.py", line 63, in predict
+    _, output = model(data)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/model/unet.py", line 70, in forward
+    dec1 = self.decoder1(dec1)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/container.py", line 141, in forward
+    input = module(input)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/batchnorm.py", line 168, in forward
+    return F.batch_norm(
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/functional.py", line 2282, in batch_norm
+    return torch.batch_norm(
+RuntimeError: CUDA out of memory. Tried to allocate 256.00 MiB (GPU 0; 11.93 GiB total capacity; 1.59 GiB already allocated; 244.31 MiB free; 2.01 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
+Finally atleast test dataloader section works 😌
+--------------Testing on patch number: 1-----------------
