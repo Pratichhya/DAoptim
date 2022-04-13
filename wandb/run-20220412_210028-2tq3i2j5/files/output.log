@@ -1,0 +1,45 @@
+
+Buckle up, here with start the journey🚲
+----------------------ready to use dataset--------------
+Found already existing npy
+shape of Xs_train:  (10830, 3, 256, 256)
+shape of Ys_train:  (10830, 1, 256, 256)
+shape of Xt_train:  (10830, 3, 256, 256)
+shape of Yt_train:  (10830, 1, 256, 256)
+--------------------------------------------------------------------
+Number of source training examples: 7580
+Number of source validation examples: 3250
+Finally atleast train and valid source dataloader section works 😌
+--------------------------------------------------------------------
+ Shape of Xt_train is:(10830, 3, 256, 256)
+  0%|                                                                                           | 0/500 [00:00<?, ?it/s]
+--------------------------------------------------------------------
+Number of target training examples: 7580
+Number of target validation examples: 3250
+Finally atleast train and valid target dataloader section works 😌
+length of train source:474, lenth of train target is 474
+length of validation source:204, lenth of validation target is 204
+The model has 31,037,633 trainable parameters
+  0%|                                                                                           | 0/500 [00:01<?, ?it/s]
+Traceback (most recent call last):
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/main.py", line 163, in <module>
+    main(net)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/main.py", line 107, in main
+    train_loss, acc_mat = Train.train_epoch(net,optimizer, source_dataloader, target_dataloader)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train.py", line 65, in train_epoch
+    g_xt, f_g_xt = net(xt)  # target embedded data
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/model/unet.py", line 67, in forward
+    dec2 = self.decoder2(dec2)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/container.py", line 141, in forward
+    input = module(input)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/modules/batchnorm.py", line 168, in forward
+    return F.batch_norm(
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/nn/functional.py", line 2282, in batch_norm
+    return torch.batch_norm(
+RuntimeError: CUDA out of memory. Tried to allocate 128.00 MiB (GPU 0; 15.78 GiB total capacity; 10.28 GiB already allocated; 71.69 MiB free; 10.30 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

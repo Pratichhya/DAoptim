@@ -1,0 +1,83 @@
+The model has 31,037,633 trainable parameters
+Buckle up, here with start the journey🚲
+  1%|█                                                                                                                                                                     | 1/158 [00:00<01:54,  1.37it/s]
+----------------------ready to use dataset--------------
+Found already existing npy
+shape of Xs_train:  (3610, 3, 256, 256)
+shape of Ys_train:  (3610, 1, 256, 256)
+shape of Xt_train:  (3610, 3, 256, 256)
+shape of Yt_train:  (3610, 1, 256, 256)
+--------------------------------------------------------------------
+Number of source training examples: 2527
+Number of source validation examples: 1083
+Finally atleast train and valid source dataloader section works 😌
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 98%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉   | 155/158 [01:49<00:02,  1.43it/s]
+Training loss in average for epoch 1 is 0.34529799222946167
+Training F1 in average for epoch 1 is 0.6800788044929504
+Training Accuracy in average for epoch 1 is 0.7712690830230713
+Training IOU in average for epoch 1 is 0.5239137411117554
+Training K in average for epoch 1 is 1.2242650985717773
+100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 158/158 [01:51<00:00,  1.42it/s]
+  0%|                                                                                                                                                                               | 0/68 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train_noDA.py", line 206, in <module>
+    SimpleUnet(net)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train_noDA.py", line 164, in SimpleUnet
+    valid_loss, acc_mat = eval_epoch(e, val_source_dataloader)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train_noDA.py", line 104, in eval_epoch
+    loss = DC(output, target)
+NameError: name 'DC' is not defined

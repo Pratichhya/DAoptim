@@ -1,0 +1,14 @@
+
+Buckle up, here with start the journey🚲
+Traceback (most recent call last):
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/prediction.py", line 96, in <module>
+    predict()
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/prediction.py", line 56, in predict
+    dataset.array_torch()
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/data_loader/dataset_ot.py", line 285, in array_torch
+    self.Ys_train = np.load(self.data_folder + "/npy/Ys_wien.npy")
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/numpy/lib/npyio.py", line 430, in load
+    return format.read_array(fid, allow_pickle=allow_pickle,
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/numpy/lib/format.py", line 756, in read_array
+    array = numpy.fromfile(fp, dtype=dtype, count=count)
+KeyboardInterrupt

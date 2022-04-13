@@ -279,10 +279,10 @@ class Dataset():
             
     def array_torch(self):
         if os.path.exists("data_loader/npy/Xt_chicago.npy") and os.path.exists("data_loader/npy/Yt_chicago.npy") and os.path.exists("data_loader/npy/Xs_wien.npy"):
-            self.Xt_train  = np.load(self.data_folder + "/npy/Xt_chicago.npy")
-            self.Yt_train   = np.load(self.data_folder + "/npy/Yt_chicago.npy")
-            self.Xs_train = np.load(self.data_folder + "/npy/Xs_wien.npy")
-            self.Ys_train = np.load(self.data_folder + "/npy/Ys_wien.npy")
+            self.Xt_train  = np.load(self.data_folder + "/npy/Xt_new.npy")
+            self.Yt_train   = np.load(self.data_folder + "/npy/Yt_new.npy")
+            self.Xs_train = np.load(self.data_folder + "/npy/Xs_new.npy")
+            self.Ys_train = np.load(self.data_folder + "/npy/Ys_new.npy")
             
             print("----------------------ready to use dataset--------------")
             print("Found already existing npy")
@@ -312,8 +312,8 @@ class Dataset():
             print(f'Number of source training examples: {len(self.source_train_partly)}')
             print(f'Number of source validation examples: {len(self.source_valid_partly)}')
             #create dataloader
-            self.source_dataloader = DataLoader(self.source_train_partly,batch_size=config["batchsize"],shuffle = True)
-            self.valid_source_dataloader = DataLoader(self.source_valid_partly,batch_size=config["batchsize"],shuffle = True)
+            self.source_dataloader = DataLoader(self.source_train_partly,batch_size=config["batchsize"],shuffle = True,pin_memory= True)
+            self.valid_source_dataloader = DataLoader(self.source_valid_partly,batch_size=config["batchsize"],shuffle = True,pin_memory= True)
             print("Finally atleast train and valid source dataloader section works 😌 ")
             
             
@@ -331,8 +331,8 @@ class Dataset():
             print(f'Number of target training examples: {len(self.target_train_partly)}')
             print(f'Number of target validation examples: {len(self.target_valid_partly)}')
             #create dataloader
-            self.target_dataloader = DataLoader(self.target_train_partly,batch_size=config["batchsize"],shuffle = True) 
-            self.valid_target_dataloader = DataLoader(self.target_valid_partly,batch_size=config["batchsize"],shuffle = True)
+            self.target_dataloader = DataLoader(self.target_train_partly,batch_size=config["batchsize"],shuffle = True,pin_memory= True) 
+            self.valid_target_dataloader = DataLoader(self.target_valid_partly,batch_size=config["batchsize"],shuffle = True,pin_memory= True)
             print("Finally atleast train and valid target dataloader section works 😌 ")
             
             
@@ -352,8 +352,8 @@ class Dataset():
             print(f'Number of source training examples: {len(self.source_train_partly)}')
             print(f'Number of source validation examples: {len(self.source_valid_partly)}')
             #create dataloader
-            self.source_dataloader = DataLoader(self.source_train_partly,batch_size=config["batchsize"])
-            self.valid_source_dataloader = DataLoader(self.source_valid_partly,batch_size=config["batchsize"])
+            self.source_dataloader = DataLoader(self.source_train_partly,batch_size=config["batchsize"],shuffle = True,pin_memory= True)
+            self.valid_source_dataloader = DataLoader(self.source_valid_partly,batch_size=config["batchsize"],shuffle = True,pin_memory= True)
             print("Finally atleast train and valid source dataloader section works 😌 ")
 
                         
@@ -372,15 +372,15 @@ class Dataset():
             print(f'Number of target training examples: {len(self.target_train_partly)}')
             print(f'Number of target validation examples: {len(self.target_valid_partly)}')
             #create dataloader
-            self.target_dataloader = DataLoader(self.target_train_partly,batch_size=config["batchsize"]) 
-            self.valid_target_dataloader = DataLoader(self.target_valid_partly,batch_size=config["batchsize"])
+            self.target_dataloader = DataLoader(self.target_train_partly,batch_size=config["batchsize"],pin_memory= True) 
+            self.valid_target_dataloader = DataLoader(self.target_valid_partly,batch_size=config["batchsize"],pin_memory= True)
             print("Finally atleast train and valid target dataloader section works 😌 ")
             
             
         elif self.for_what == "testing":
             if os.path.exists(self.data_folder + "/npy/Xtest.npy"):
-                self.Xtest = np.load(self.data_folder + "npy/Xtest_chicago.npy")
-                self.Ytest = np.load(self.data_folder + "npy/Ytest_chicago.npy")
+                self.Xtest = np.load(self.data_folder + "npy/Xtest_chicaustin.npy")
+                self.Ytest = np.load(self.data_folder + "npy/Ytest_chicaustin.npy")
                 print("Found already existing npy")
                 print("shape of Xtest: ", self.Xtest.shape)
                 print("shape of Ytest: ", self.Ytest.shape)
@@ -393,7 +393,7 @@ class Dataset():
             self.tensor_xp = torch.Tensor(self.Xtest.astype(np.float16)) 
             self.tensor_yp = torch.Tensor(self.Ytest.astype(np.float16)) 
             self.tensor_test = TensorDataset(self.tensor_xp,self.tensor_yp) 
-            self.test_dataloader = DataLoader(self.tensor_test, batch_size=4) 
+            self.test_dataloader = DataLoader(self.tensor_test, batch_size=4,pin_memory= True) 
             print("Finally atleast test dataloader section works 😌")
         else:
             print("Please be sure you know what you are doing👀")

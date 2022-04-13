@@ -118,10 +118,11 @@ class Train:
             transfer_losses += transfer_loss.detach().cpu().numpy()
             target_losses += target_loss.detach().cpu().numpy()
             
-            del xs, xt, ys,yt,f_g_xs,f_g_xt
+            del xs, xt, ys,yt,f_g_xs,f_g_xt,
             torch.cuda.empty_cache()
             wandb.log({'train_Loss': total_loss,'train_F1': f1_source_step,'train_acc':acc_step,'train_IoU':IoU_step,'f1_target': f1_target,'acc_target':acc_target,'IoU_target':IoU_target,'classifier_loss':classifier_loss,'transfer_loss':transfer_loss,'target_loss':target_loss})
             # wandb.log({'train_Loss': training_losses/config["num_iterations"],'train_F1': f1_source/config["num_iterations"],'train_acc':acc/config["num_iterations"],'train_IoU':IoU/config["num_iterations"],'f1_target': f1_targets/config["num_iterations"],'acc_target':acc_tr/config["num_iterations"],'IoU_target':IoU_tr/config["num_iterations"],'classifier_loss':classifier_losses/config["num_iterations"],'transfer_loss':transfer_losses/config["num_iterations"],'target_loss':target_losses/config["num_iterations"]})
+        del classifier_loss,transfer_loss,target_loss,f1_target,acc_target,K_target,IoU_target,f1_source_step,acc_step,IoU_step,K_step,M,gamma,gamma_emd
         return (training_losses/config["num_iterations"]),[f1_tr/config["num_iterations"],acc_tr/config["num_iterations"],IoU_tr/config["num_iterations"],K_tr/config["num_iterations"]]
     
     def eval_epoch(e, net, val_source_dataloader, val_target_dataloader):
@@ -234,6 +235,6 @@ class Train:
                 wandb.log({'val_train_Loss': eval_total_loss,'val_train_F1': f1_source_step,'val_train_acc':acc_step,'val_train_IoU':IoU_step,'val_f1_target': val_f1_target,'val_acc_target':val_acc_target,'val_IoU_target':val_IoU_target,'val_classifier_loss':eval_classifier_loss,'val_transfer_loss':eval_transfer_loss,'val_target_loss':eval_target_loss})
                 # wandb.log({'val_train_Loss': training_losses/config["num_iterations"],'val_train_F1': f1_source/config["num_iterations"],'val_train_acc':acc/config["num_iterations"],'val_train_IoU':IoU/config["num_iterations"],'val_f1_target': f1_t/config["num_iterations"],'val_acc_target':acc_t/config["num_iterations"],'val_IoU_target':IoU_t/config["num_iterations"],'val_classifier_loss':classifier_losses/config["num_iterations"],'val_transfer_loss':transfer_losses/config["num_iterations"],'val_target_loss':target_losses/config["num_iterations"]})
         
-                    
+        del eval_classifier_loss,eval_transfer_loss,eval_target_loss, val_f1_target, val_acc_target,val_IoU_target,val_K_target,f1_source_step,acc_step,IoU_step,val_gamma,val_gamma_emd
         return (training_losses/config["num_iterations"]),[f1_t/config["num_iterations"],acc_t/config["num_iterations"],IoU_t/config["num_iterations"],K_t/config["num_iterations"]]
 

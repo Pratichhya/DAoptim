@@ -8,5 +8,10 @@ __pycache__
 *.zip
 *.npy
 *.ipynb_checkpoints
-/wandb/
-/output_tif/
+*wandb/
+*data_loader/output_tif/
+*.cpg
+*.dbf
+*.prj
+*.shp
+*.cpg

@@ -1,0 +1,24 @@
+{
+    "os": "Linux-5.10.0-13-amd64-x86_64-with-glibc2.31",
+    "python": "3.9.7",
+    "heartbeatAt": "2022-04-12T15:16:07.012621",
+    "startedAt": "2022-04-12T15:16:05.414371",
+    "docker": null,
+    "gpu": "Tesla V100-PCIE-16GB",
+    "gpu_count": 1,
+    "cpu_count": 48,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train_noDA.py",
+    "codePath": "train_noDA.py",
+    "git": {
+        "remote": "git@github.com:Pratichhya/DAoptim.git",
+        "commit": "353efaf94d6588af385d0504b665856ca546cf78"
+    },
+    "email": "mepratichhya@gmail.com",
+    "root": "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim",
+    "host": "volta1",
+    "username": "e2008982",
+    "executable": "/share/projects/erasmus/pratichhya_sharma/app/bin/python"
+}

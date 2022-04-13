@@ -56,7 +56,7 @@ testing_loss = 0.0
 training_loss = 0.0
 validation_loss = 0.0
 mode = config["mode"]
-NUM_EPOCHS = 25
+NUM_EPOCHS = 30
 lrs = []
 
 # early stopping patience; how long to wait after last time validation loss improved.
@@ -74,7 +74,7 @@ def train_epoch(optimizer,dataloader):
         data,target = Variable(data.cuda()), Variable(target.cuda())
         #zero optimizer
         optimizer.zero_grad()
-        output = net(data)
+        _,output = net(data)
         
         loss = Dice(output, target)
         loss.backward()
@@ -100,11 +100,11 @@ def eval_epoch(epochs,dataloader):
     with torch.no_grad():
         for batch_idx, (data,target) in tqdm(enumerate(dataloader),total=len_train):
             data,target = Variable(data.cuda()), Variable(target.cuda())
-            output = net(data)
-            loss = DC(output, target)
+            _,output = net(data)
+            loss = Dice(output, target)
 
             #evaluation
-            f1_source_step,acc_step,IoU_step,K_step = f1_score(target,output)
+            f1_source_step,acc_step,IoU_step,K_step = eval_metrics.f1_score(target,output)
             f1_source+=f1_source_step
             acc+=acc_step
             IoU+=IoU_step
@@ -142,6 +142,8 @@ def SimpleUnet(net):
 
     patience = 3
     the_last_loss = 50
+    test_f1 =0 
+    trigger_times = 0
         # seting training and testing dataset
     dsource_loaders = Dataset(config["data_folder"], config["patchsize"], mode["1"])
     dsource_loaders.array_torch()
@@ -173,27 +175,28 @@ def SimpleUnet(net):
         # Print Learning Rate
         print("last learning rate:", scheduler.get_last_lr(), "LR:", scheduler.get_lr())
 
-        # Early stopping
+        ## Early stopping
         print("###################### Early stopping ##########################")
         the_current_loss = valid_loss
         print("The current validation loss:", the_current_loss)
-        trigger_times = 0
+        
         if the_current_loss >= the_last_loss:
             trigger_times += 1
+            if test_f1 <= acc_mat[0]:
+                test_f1 = acc_mat[0]
+                torch.save(net.state_dict(), config["model_path"] + "f1great_simple1.pt")
             print("trigger times:", trigger_times)
-
-            if trigger_times >= patience:
+            if trigger_times == patience:
                 print("Early stopping!\nStart to test process.")
-                torch.save(net.state_dict(), config["model_path"] + "noDAes1.pt")
+                torch.save(net.state_dict(), config["model_path"] + "es_simple1.pt")
         else:
-            print("trigger times: 0")
-            trigger_times = 0
-
-        the_last_loss = the_current_loss
+            print(f"trigger times: {trigger_times}")
+            the_last_loss = the_current_loss
+            
         del valid_loss, acc_mat
         # lrs.append(optimizer.param_groups[0]["lr"])
         # print("learning rates are:",lrs
-    torch.save(net.state_dict(), config["model_path"] + "noDAv2.pt")
+    torch.save(net.state_dict(), config["model_path"] + "noDAv3.pt")
     print("finished")
     
     

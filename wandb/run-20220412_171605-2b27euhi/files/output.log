@@ -1,0 +1,18 @@
+The model has 31,037,633 trainable parameters
+Buckle up, here with start the journey🚲
+Traceback (most recent call last):
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train_noDA.py", line 206, in <module>
+    SimpleUnet(net)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train_noDA.py", line 148, in SimpleUnet
+    dsource_loaders.array_torch()
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/data_loader/dataset_ot.py", line 345, in array_torch
+    self.tensor_xs_train = TensorDataset(self.tensor_xs,self.tensor_ys)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/utils/data/dataset.py", line 257, in __init__
+    assert all(tensors[0].size(0) == tensor.size(0) for tensor in tensors), "Size mismatch between tensors"
+AssertionError: Size mismatch between tensors
+----------------------ready to use dataset--------------
+Found already existing npy
+shape of Xs_train:  (10830, 3, 256, 256)
+shape of Ys_train:  (3610, 1, 256, 256)
+shape of Xt_train:  (10830, 3, 256, 256)
+shape of Yt_train:  (10830, 1, 256, 256)

@@ -1,0 +1,28 @@
+The model has 31,037,633 trainable parameters
+Buckle up, here with start the journey🚲
+  1%|██                                                                                                                                                                    | 2/158 [00:01<01:50,  1.41it/s]
+----------------------ready to use dataset--------------
+Found already existing npy
+shape of Xs_train:  (3610, 3, 256, 256)
+shape of Ys_train:  (3610, 1, 256, 256)
+shape of Xt_train:  (3610, 3, 256, 256)
+shape of Yt_train:  (3610, 1, 256, 256)
+--------------------------------------------------------------------
+Number of source training examples: 2527
+Number of source validation examples: 1083
+Finally atleast train and valid source dataloader section works 😌
+
+
+  6%|██████████▍                                                                                                                                                          | 10/158 [00:07<01:50,  1.34it/s]
+Traceback (most recent call last):
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train_noDA.py", line 206, in <module>
+    SimpleUnet(net)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train_noDA.py", line 154, in SimpleUnet
+    train_loss, acc_mat = train_epoch(optimizer, source_dataloader)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train_noDA.py", line 80, in train_epoch
+    loss.backward()
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/_tensor.py", line 307, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph, inputs=inputs)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/autograd/__init__.py", line 154, in backward
+    Variable._execution_engine.run_backward(
+KeyboardInterrupt

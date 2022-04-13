@@ -54,7 +54,7 @@ lrs = []
 def main(
     net,
 ):
-    set_seed(40)
+    set_seed(42)
 
     # seting training and testing dataset
     dsource_loaders = Dataset(config["data_folder"], config["patchsize"], "both")
@@ -137,11 +137,11 @@ def main(
             trigger_times += 1
             if test_f1 <= val_acc_mat[0]:
                 test_f1 = val_acc_mat[0]
-                torch.save(net.state_dict(), config["model_path"] + "f1greater2.pt")
+                torch.save(net.state_dict(), config["model_path"] + "f1greater_all.pt")
             print("trigger times:", trigger_times)
             if trigger_times == patience:
                 print("Early stopping!\nStart to test process.")
-                torch.save(net.state_dict(), config["model_path"] + "es_wienTuned3.pt")
+                torch.save(net.state_dict(), config["model_path"] + "es_wienTuned_all.pt")
         else:
             print(f"trigger times: {trigger_times}")
             the_last_loss = the_current_loss
@@ -150,7 +150,7 @@ def main(
 #         # lrs.append(optimizer.param_groups[0]["lr"])
         # print("learning rates are:",lrs
     print("finished")
-    torch.save(net.state_dict(), config["model_path"] + "DA_wientuned4.pt")
+    torch.save(net.state_dict(), config["model_path"] + "DA_wientuned_all.pt")
     gc.collect()
     torch.cuda.empty_cache()
 

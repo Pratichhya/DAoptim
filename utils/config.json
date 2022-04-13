@@ -2,9 +2,9 @@
 {
     "alpha": 0.09,
     "base_lr": 5e-3,
-    "batchsize": 16,
+    "batchsize": 11,
     "data_folder": "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/data_loader/",
-    "epoch": 60,
+    "epoch": 50,
     "lambda_t": 0.05,
     "lr_param": {
         "gamma": 0.001,
@@ -20,7 +20,7 @@
     "model_path": "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/model/",
     "n_channel": 3,
     "n_classes": 1,
-    "num_iterations": 160,
+    "num_iterations": 650,
     "optim_params": {
         "lr": 5e-3,
         "momentum": 0.66,

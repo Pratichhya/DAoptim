@@ -1,0 +1,35 @@
+
+Buckle up, here with start the journey🚲
+----------------------ready to use dataset--------------
+Found already existing npy
+shape of Xs_train:  (10830, 3, 256, 256)
+shape of Ys_train:  (10830, 1, 256, 256)
+shape of Xt_train:  (10830, 3, 256, 256)
+shape of Yt_train:  (10830, 1, 256, 256)
+--------------------------------------------------------------------
+Number of source training examples: 7580
+Number of source validation examples: 3250
+Finally atleast train and valid source dataloader section works 😌
+--------------------------------------------------------------------
+ Shape of Xt_train is:(10830, 3, 256, 256)
+--------------------------------------------------------------------
+Number of target training examples: 7580
+Number of target validation examples: 3250
+Finally atleast train and valid target dataloader section works 😌
+length of train source:632, lenth of train target is 632
+length of validation source:271, lenth of validation target is 271
+The model has 31,037,633 trainable parameters
+----------------------Traning phase-----------------------------
+  0%|                                                                                           | 0/650 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/main.py", line 163, in <module>
+    main(net)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/main.py", line 107, in main
+    train_loss, acc_mat = Train.train_epoch(net,optimizer, source_dataloader, target_dataloader)
+  File "/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/train.py", line 95, in train_epoch
+    total_loss.backward()
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/_tensor.py", line 307, in backward
+    torch.autograd.backward(self, gradient, retain_graph, create_graph, inputs=inputs)
+  File "/share/projects/erasmus/pratichhya_sharma/app/lib/python3.9/site-packages/torch/autograd/__init__.py", line 154, in backward
+    Variable._execution_engine.run_backward(
+RuntimeError: CUDA out of memory. Tried to allocate 144.00 MiB (GPU 0; 15.78 GiB total capacity; 10.13 GiB already allocated; 89.69 MiB free; 10.28 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF

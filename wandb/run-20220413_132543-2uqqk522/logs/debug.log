@@ -1,0 +1,23 @@
+2022-04-13 13:25:43,897 INFO    MainThread:89045 [wandb_setup.py:_flush():75] Loading settings from /share/etud/e2008982/.config/wandb/settings
+2022-04-13 13:25:43,897 INFO    MainThread:89045 [wandb_setup.py:_flush():75] Loading settings from /share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/wandb/settings
+2022-04-13 13:25:43,897 INFO    MainThread:89045 [wandb_setup.py:_flush():75] Loading settings from environment variables: {}
+2022-04-13 13:25:43,897 INFO    MainThread:89045 [wandb_setup.py:_flush():75] Inferring run settings from compute environment: {'program_relpath': 'prediction.py', 'program': '/share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/prediction.py'}
+2022-04-13 13:25:43,898 INFO    MainThread:89045 [wandb_init.py:_log_setup():405] Logging user logs to /share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/wandb/run-20220413_132543-2uqqk522/logs/debug.log
+2022-04-13 13:25:43,898 INFO    MainThread:89045 [wandb_init.py:_log_setup():406] Logging internal logs to /share/mastoc/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/wandb/run-20220413_132543-2uqqk522/logs/debug-internal.log
+2022-04-13 13:25:43,898 INFO    MainThread:89045 [wandb_init.py:init():439] calling init triggers
+2022-04-13 13:25:43,898 INFO    MainThread:89045 [wandb_init.py:init():442] wandb.init called with sweep_config: {}
+config: {}
+2022-04-13 13:25:43,898 INFO    MainThread:89045 [wandb_init.py:init():492] starting backend
+2022-04-13 13:25:43,899 INFO    MainThread:89045 [backend.py:_multiprocessing_setup():99] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2022-04-13 13:25:43,943 INFO    MainThread:89045 [backend.py:ensure_launched():219] starting backend process...
+2022-04-13 13:25:43,972 INFO    MainThread:89045 [backend.py:ensure_launched():224] started backend process with pid: 89188
+2022-04-13 13:25:43,974 INFO    MainThread:89045 [wandb_init.py:init():501] backend started and connected
+2022-04-13 13:25:43,989 INFO    MainThread:89045 [wandb_init.py:init():565] updated telemetry
+2022-04-13 13:25:44,057 INFO    MainThread:89045 [wandb_init.py:init():596] communicating run to backend with 30 second timeout
+2022-04-13 13:26:14,059 INFO    MainThread:89045 [interface_shared.py:_communicate_run():322] couldn't get run from backend
+2022-04-13 13:26:14,059 ERROR   MainThread:89045 [wandb_init.py:init():601] backend process timed out
+2022-04-13 13:26:14,059 ERROR   MainThread:89045 [wandb_init.py:init():610] encountered error: Error communicating with wandb process
+try: wandb.init(settings=wandb.Settings(start_method='fork'))
+or:  wandb.init(settings=wandb.Settings(start_method='thread'))
+For more info see: https://docs.wandb.ai/library/init#init-start-error
+2022-04-13 13:26:32,959 INFO    MainThread:89045 [wandb_init.py:teardown():253] tearing down wandb.init
