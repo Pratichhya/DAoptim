@@ -16,7 +16,6 @@ from torchvision import transforms, utils
 from torch.autograd import Variable
 import torchmetrics
 import os
-from scipy.spatial import distance
 
 # files
 from data_loader.dataset_ot import Dataset
@@ -31,7 +30,7 @@ with open(
 ) as read_file:
     config = json.load(read_file)
 
-Dice = FocalTverskyLoss()
+Dice = DiceLoss()
 
 
 class Train:
@@ -70,26 +69,15 @@ class Train:
 
             #target loss term on labels
             """loss_target = loss_fn(ys, f_g_xt)"""
-            # target_loss = Dice(f_g_xt, ys)
-            v_ys = ys.view(ys.size(0),-1)
-            v_f_g_xt = f_g_xt.view(f_g_xt.size(0),-1)
-#             print(f"v_ys{v_ys.shape}")
-#             print(f"v_f_g_xt{v_f_g_xt.shape}")
-#             print(f"f_g_xt{f_g_xt.shape}")
-#             print(f"ys{ys.shape}")
-#             print(f"g_xs{g_xs.shape}")
-#             print(f"g_xt{g_xt.shape}")
-            
-            target_loss = (torch.cdist(v_ys,v_f_g_xt)**2)/v_ys.size(1)
-            # print(f"target_loss{target_loss}")
+            target_loss = Dice(f_g_xt, ys)
+            #M_sce = - torch.mm(ys, torch.transpose(torch.log(f_g_xt), 0, 1))
 
             #transportation cost matrix
-            M_embed = (torch.cdist(g_xs, g_xt) ** 2)/g_xs.size(1) #Term on embedded data
-            # print(f"M_embed{M_embed.shape}")
+            M_embed = torch.cdist(g_xs, g_xt) ** 2# Term on embedded data
 
             #computed total ground cost
             M = M_embed*alpha + lambda_t * target_loss 
-            
+
             #OT computation
             a, b = ot.unif(g_xs.size()[0]), ot.unif(g_xt.size()[0])
             gamma_emd = ot.emd(a, b, M.detach().cpu().numpy())
@@ -135,7 +123,7 @@ class Train:
             wandb.log({'train_Loss': total_loss,'train_F1': f1_source_step,'train_acc':acc_step,'train_IoU':IoU_step,'f1_target': f1_target,'acc_target':acc_target,'IoU_target':IoU_target,'classifier_loss':classifier_loss,'transfer_loss':transfer_loss,'target_loss':target_loss})
             # wandb.log({'train_Loss': training_losses/config["num_iterations"],'train_F1': f1_source/config["num_iterations"],'train_acc':acc/config["num_iterations"],'train_IoU':IoU/config["num_iterations"],'f1_target': f1_targets/config["num_iterations"],'acc_target':acc_tr/config["num_iterations"],'IoU_target':IoU_tr/config["num_iterations"],'classifier_loss':classifier_losses/config["num_iterations"],'transfer_loss':transfer_losses/config["num_iterations"],'target_loss':target_losses/config["num_iterations"]})
         del classifier_loss,transfer_loss,target_loss,f1_target,acc_target,K_target,IoU_target,f1_source_step,acc_step,IoU_step,K_step,M,gamma,gamma_emd
-        return (training_losses/config["num_iterations"]),(transfer_losses/config["num_iterations"]),[f1_tr/config["num_iterations"],acc_tr/config["num_iterations"],IoU_tr/config["num_iterations"],K_tr/config["num_iterations"]]
+        return (training_losses/config["num_iterations"]),[f1_tr/config["num_iterations"],acc_tr/config["num_iterations"],IoU_tr/config["num_iterations"],K_tr/config["num_iterations"]]
     
     def eval_epoch(e, net, val_source_dataloader, val_target_dataloader):
      # def eval_epoch(e, net, val_source_dataloader, val_target_dataloader,alpha,lambda_t,reg_m,itr):
@@ -178,12 +166,8 @@ class Train:
 
                 # target loss term on labels
                 """loss_target = loss_fn(ys, f_g_xt)"""
-                # eval_target_loss = Dice(val_f_g_xt, val_ys)
+                eval_target_loss = Dice(val_f_g_xt, val_ys)
                 # print(f"target segmentation loss is:{target_loss}")
-                eval_val_ys = val_ys.view(val_ys.size(0),-1)
-                eval_val_f_g_xt = val_f_g_xt.view(val_f_g_xt.size(0),-1)
-
-                eval_target_loss = torch.cdist(eval_val_ys,eval_val_f_g_xt)**2 #/v_ys.size(1)
 
                 # transportation cost matrix
                 eval_M_embed = (
@@ -252,5 +236,5 @@ class Train:
                 # wandb.log({'val_train_Loss': training_losses/config["num_iterations"],'val_train_F1': f1_source/config["num_iterations"],'val_train_acc':acc/config["num_iterations"],'val_train_IoU':IoU/config["num_iterations"],'val_f1_target': f1_t/config["num_iterations"],'val_acc_target':acc_t/config["num_iterations"],'val_IoU_target':IoU_t/config["num_iterations"],'val_classifier_loss':classifier_losses/config["num_iterations"],'val_transfer_loss':transfer_losses/config["num_iterations"],'val_target_loss':target_losses/config["num_iterations"]})
         
         del eval_classifier_loss,eval_transfer_loss,eval_target_loss, val_f1_target, val_acc_target,val_IoU_target,val_K_target,f1_source_step,acc_step,IoU_step,val_gamma,val_gamma_emd
-        return (training_losses/config["num_iterations"]),(transfer_losses/config["num_iterations"]),[f1_t/config["num_iterations"],acc_t/config["num_iterations"],IoU_t/config["num_iterations"],K_t/config["num_iterations"]]
+        return (training_losses/config["num_iterations"]),[f1_t/config["num_iterations"],acc_t/config["num_iterations"],IoU_t/config["num_iterations"],K_t/config["num_iterations"]]
 

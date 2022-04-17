@@ -27,10 +27,9 @@ def set_seed(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.enabled = False
-
+    torch.backends.cudnn.deterministic = True
     return True
 
 
@@ -104,23 +103,25 @@ def main(
     test_f1 = 0
     for e in range(1, NUM_EPOCHS + 1):
         print("----------------------Traning phase-----------------------------")
-        train_loss, acc_mat = Train.train_epoch(net,optimizer, source_dataloader, target_dataloader)
+        train_loss,transfer_loss, acc_mat = Train.train_epoch(net,optimizer, source_dataloader, target_dataloader)
         print(f"Training loss in average for epoch {str(e)} is {train_loss}")
+        print(f"transfer_loss in average for epoch {str(e)} is {transfer_loss}")
         print(f"Training F1 in average for epoch {str(e)} is {acc_mat[0]}")
         print(f"Training Accuracy in average for epoch {str(e)} is {acc_mat[1]}")
         print(f"Training IOU in average for epoch {str(e)} is {acc_mat[2]}")
         print(f"Training K in average for epoch {str(e)} is {acc_mat[3]}")
-        # wandb.log({'Train Loss': train_loss,'Train_F1': acc_mat[0],'Train_acc':acc_mat[1],'Train_IoU':acc_mat[2],'Train_Kappa':acc_mat[3]}, step = e)
+        wandb.log({'E_Train Loss': train_loss,'E_Transfer Loss': transfer_loss,'E_Train_F1': acc_mat[0],'E_Train_acc':acc_mat[1],'E_Train_IoU':acc_mat[2]})
         # (total/batch)*epoch=iteration
-        del train_loss,acc_mat
+        del train_loss,transfer_loss,acc_mat
         print("----------------------Evaluation phase-----------------------------")
-        valid_loss, val_acc_mat = Train.eval_epoch(e, net, source_dataloader, target_dataloader)
-        print(f"Evaluation loss in average for epoch {str(e)} is {valid_loss}")
+        valid_loss,valid_transfer, val_acc_mat = Train.eval_epoch(e, net, source_dataloader, target_dataloader)
+        print(f"Evaluation Total loss in average for epoch {str(e)} is {valid_loss}")
+        print(f"Evaluation Transfer loss in average for epoch {str(e)} is {valid_transfer}")
         print(f"Evaluation F1 in average for epoch {str(e)} is {val_acc_mat[0]}")
         print(f"Evaluation Accuracy in average for epoch {str(e)} is {val_acc_mat[1]}")
         print(f"Evaluation IOU in average for epoch {str(e)} is {val_acc_mat[2]}")
         print(f"Evaluation K in average for epoch {str(e)} is {val_acc_mat[3]}")
-        # wandb.log({'Val_Loss': valid_loss,'Val_F1': acc_mat[0],'Val_acc':acc_mat[1],'Val_IoU':acc_mat[2],'Val_Kappa':acc_mat[3]}, step = e)
+        wandb.log({'E_Val_Loss': valid_loss,'E_Val_Transfer': valid_transfer,'E_Val_F1': val_acc_mat[0],'E_Val_acc':val_acc_mat[1],'E_Val_IoU':val_acc_mat[2]})
 
         # Decay Learning Rate kanxi: check this
         if e % 10 == 0:
@@ -137,11 +138,11 @@ def main(
             trigger_times += 1
             if test_f1 <= val_acc_mat[0]:
                 test_f1 = val_acc_mat[0]
-                torch.save(net.state_dict(), config["model_path"] + "f1greater_all.pt")
+                torch.save(net.state_dict(), config["model_path"] + "f1es_cdistlr.pt")
             print("trigger times:", trigger_times)
             if trigger_times == patience:
                 print("Early stopping!\nStart to test process.")
-                torch.save(net.state_dict(), config["model_path"] + "es_wienTuned_all.pt")
+                torch.save(net.state_dict(), config["model_path"] + "es_wien_cdistlr.pt")
         else:
             print(f"trigger times: {trigger_times}")
             the_last_loss = the_current_loss
@@ -150,7 +151,7 @@ def main(
 #         # lrs.append(optimizer.param_groups[0]["lr"])
         # print("learning rates are:",lrs
     print("finished")
-    torch.save(net.state_dict(), config["model_path"] + "DA_wientuned_all.pt")
+    torch.save(net.state_dict(), config["model_path"] + "DA_wien_cdistlr.pt")
     gc.collect()
     torch.cuda.empty_cache()
 
@@ -160,4 +161,5 @@ if __name__ == "__main__":
     torch.cuda.empty_cache()
     wandb.login()
     wandb.init(project="server")
+    wandb.define_metric("E_Train_F1", summary="max")
     main(net)
