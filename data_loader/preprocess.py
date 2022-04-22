@@ -77,5 +77,5 @@ class PreProcess:
     def source_norm(self):
         a = self.Xs_train.max()
         b = self.Xs_train.min()
-        self.Xs_train = ((self.Xs_train-b)/(a-b))*255
+        self.Xs_train = ((self.Xs_train-b)/(a-b))
         return self.Xs_train

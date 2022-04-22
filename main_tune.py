@@ -7,7 +7,7 @@ import numpy as np
 import os
 import optuna
 import joblib
-from model.unet import UNet
+# from model.unet import UNet
 from train_tune import Train
 from data_loader.dataset_ot import Dataset
 import gc
@@ -32,16 +32,15 @@ with open(
 ) as read_file:
     config = json.load(read_file)
 # set network
-net = UNet(config["n_channel"], config["n_classes"])
+from seg_model_smp.models_predefined import segmentation_models_pytorch as psmp
+net = psmp.Unet( encoder_name="resnet34",        
+   encoder_weights=None,    
+   in_channels=3,                  
+   classes=1,                      
+)
 net.cuda()
 
 saving_interval = 10
-base_lr = 0.01
-running_loss = 0.0
-testing_loss = 0.0
-training_loss = 0.0
-validation_loss = 0.0
-mode = config["mode"]
 lrs = []
 
 # early stopping patience; how long to wait after last time validation loss improved.
@@ -97,15 +96,16 @@ def main_hyper(trial):
         # 'lambda_t':trial.suggest_uniform('lambda_t', 0.09, 0.1),
         # 'reg_m':trial.suggest_uniform('reg_m', 0.01, 0.09)
         # 'n_epochs' : trial.suggest_int('n_epochs',10,50),
-        "n_epochs":25,
+        "n_epochs":30,
         "seed": 42,
         "lr": trial.suggest_loguniform('lr', 1e-4, 1e-1),
         "momentum": 0.6,
         "optimizer": optim.Adam,
         "save_model": False,
-        'alpha':trial.suggest_uniform('alpha', 0.001, 0.9),
+        'alpha':trial.suggest_uniform('alpha', 0.07, 2),
         'lambda_t':trial.suggest_uniform('lambda_t', 0.001, 0.9),
-
+        'reg_m':trial.suggest_uniform('reg_m', 0.01, 0.09)
+        
     }
 
     torch.manual_seed(cfg["seed"])
@@ -125,13 +125,15 @@ def main_hyper(trial):
     for epoch in range(1, cfg["n_epochs"] + 1):
         print(f"in epoch {epoch}")
         print("----------------------Traning phase-----------------------------")
-        train_loss, acc_mat = Train.train_epoch(
+        train_loss,transfer_loss, acc_mat = Train.train_epoch(
             net,
             optimizer,
             source_dataloader,
             target_dataloader,
             cfg["alpha"],
-            cfg["lambda_t"]
+            cfg["lambda_t"],
+            cfg["reg_m"],
+            scaler            
         )
         f1 = acc_mat[0]
         iou = acc_mat[2]
@@ -168,8 +170,8 @@ def main_hyper(trial):
 if __name__ == "__main__":
     sampler = optuna.samplers.TPESampler()
     study = optuna.create_study(sampler=sampler, direction="maximize")
-    study.optimize(func=main_hyper, n_trials=5)
+    study.optimize(func=main_hyper, n_trials=6)
     joblib.dump(
         study,
-        "/share/projects/erasmus/pratichhya_sharma/version00/model/test09_optuna.pkl",
+        "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/model/jumbot_optuna.pkl",
     )

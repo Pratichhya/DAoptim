@@ -279,10 +279,10 @@ class Dataset():
             
     def array_torch(self):
         if os.path.exists("data_loader/npy/Xt_chicago.npy") and os.path.exists("data_loader/npy/Yt_chicago.npy") and os.path.exists("data_loader/npy/Xs_wien.npy"):
-            self.Xt_train  = (np.load(self.data_folder + "/npy/Xtest_chicago.npy"))/255
-            self.Yt_train   = np.load(self.data_folder + "/npy/Ytest_chicago.npy")
-            self.Xs_train = (np.load(self.data_folder + "/npy/Xtest_wien.npy"))/255
-            self.Ys_train = np.load(self.data_folder + "/npy/Ytest_wien.npy")
+            self.Xt_train  = (np.load(self.data_folder + "/npy/Xt_chicago.npy"))/255
+            self.Yt_train   = np.load(self.data_folder + "/npy/Yt_chicago.npy")
+            self.Xs_train = (np.load(self.data_folder + "/npy/Xs_wien.npy"))/255
+            self.Ys_train = np.load(self.data_folder + "/npy/Ys_wien.npy")
             
             print("----------------------ready to use dataset--------------")
             print("Found already existing npy")

@@ -7,7 +7,7 @@ import wandb
 import numpy as np
 import os
 
-from model.unet import UNet
+# from model.unet import UNet
 from train import Train
 from data_loader.dataset_ot import Dataset
 import gc
@@ -34,15 +34,15 @@ def set_seed(seed):
 
 
 # set network
-net = UNet(config["n_channel"], config["n_classes"])
-#net.load_state_dict(torch.load(config["model_path"] + "noDA_wien.pt"))
+# net = UNet(config["n_channel"], config["n_classes"])
+# net.load_state_dict(torch.load(config["model_path"] + "DA_jumbot.pt"))
 
-#from seg_model_smp.models_predefined import segmentation_models_pytorch as psmp
-#net = psmp.Unet(    encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
- #   encoder_weights="imagenet",     # use `imagenet` pre-trained weights for encoder initialization
-  #  in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
-   # classes=1,                      # model output channels (number of classes in your dataset)
-#)
+from seg_model_smp.models_predefined import segmentation_models_pytorch as psmp
+net = psmp.Unet( encoder_name="resnet34",        # choose encoder, e.g. mobilenet_v2 or efficientnet-b7
+   encoder_weights=None,     # use `imagenet` pre-trained weights for encoder initialization
+   in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
+   classes=1,                      # model output channels (number of classes in your dataset)
+)
 net.cuda()
 
 saving_interval = 10
@@ -98,36 +98,37 @@ def main(
     )
     
     patience = 5
-    the_last_loss = 100
+    the_last_loss = 10000000
     trigger_times = 0
     test_f1 = 0
+    
+    scaler = torch.cuda.amp.GradScaler()
     for e in range(1, NUM_EPOCHS + 1):
         print("----------------------Traning phase-----------------------------")
-        train_loss,transfer_loss, acc_mat = Train.train_epoch(net,optimizer, source_dataloader, target_dataloader)
+        train_loss,transfer_loss, acc_mat = Train.train_epoch(net,optimizer, source_dataloader, target_dataloader, scaler)
         print(f"Training loss in average for epoch {str(e)} is {train_loss}")
         print(f"transfer_loss in average for epoch {str(e)} is {transfer_loss}")
         print(f"Training F1 in average for epoch {str(e)} is {acc_mat[0]}")
         print(f"Training Accuracy in average for epoch {str(e)} is {acc_mat[1]}")
         print(f"Training IOU in average for epoch {str(e)} is {acc_mat[2]}")
         print(f"Training K in average for epoch {str(e)} is {acc_mat[3]}")
-        wandb.log({'E_Train Loss': train_loss,'E_Transfer Loss': transfer_loss,'E_Train_F1': acc_mat[0],'E_Train_acc':acc_mat[1],'E_Train_IoU':acc_mat[2]})
+        # wandb.log({'E_Train Loss': train_loss,'E_Transfer Loss': transfer_loss,'E_Train_F1': acc_mat[0],'E_Train_acc':acc_mat[1],'E_Train_IoU':acc_mat[2]})
         # (total/batch)*epoch=iteration
-        del train_loss,transfer_loss,acc_mat
         print("----------------------Evaluation phase-----------------------------")
-        valid_loss,valid_transfer, val_acc_mat = Train.eval_epoch(e, net, source_dataloader, target_dataloader)
+        valid_loss,valid_transfer, val_acc_mat = Train.eval_epoch(e, net, source_dataloader, target_dataloader,scaler)
         print(f"Evaluation Total loss in average for epoch {str(e)} is {valid_loss}")
         print(f"Evaluation Transfer loss in average for epoch {str(e)} is {valid_transfer}")
         print(f"Evaluation F1 in average for epoch {str(e)} is {val_acc_mat[0]}")
         print(f"Evaluation Accuracy in average for epoch {str(e)} is {val_acc_mat[1]}")
         print(f"Evaluation IOU in average for epoch {str(e)} is {val_acc_mat[2]}")
         print(f"Evaluation K in average for epoch {str(e)} is {val_acc_mat[3]}")
-        wandb.log({'E_Val_Loss': valid_loss,'E_Val_Transfer': valid_transfer,'E_Val_F1': val_acc_mat[0],'E_Val_acc':val_acc_mat[1],'E_Val_IoU':val_acc_mat[2]})
+        wandb.log({'E_Train Loss': train_loss,'E_Transfer Loss': transfer_loss,'E_Train_F1': acc_mat[0],'E_Train_acc':acc_mat[1],'E_Train_IoU':acc_mat[2],'E_Val_Loss': valid_loss,'E_Val_Transfer': valid_transfer,'E_Val_F1': val_acc_mat[0],'E_Val_acc':val_acc_mat[1],'E_Val_IoU':val_acc_mat[2]})
 
         # Decay Learning Rate kanxi: check this
-        if e % 10 == 0:
-            scheduler.step()
-        # Print Learning Rate
-        print("last learning rate:", scheduler.get_last_lr(), "LR:", scheduler.get_lr())
+        # if e % 10 == 0:
+        #     scheduler.step()
+        # # Print Learning Rate
+        # print("last learning rate:", scheduler.get_last_lr(), "LR:", scheduler.get_lr())
 
         # Early stopping
         print("###################### Early stopping ##########################")
@@ -138,11 +139,11 @@ def main(
             trigger_times += 1
             if test_f1 <= val_acc_mat[0]:
                 test_f1 = val_acc_mat[0]
-                torch.save(net.state_dict(), config["model_path"] + "f1es_cdistlr.pt")
+                torch.save(net.state_dict(), config["model_path"] + "f1_djdot_b24.pt")
             print("trigger times:", trigger_times)
             if trigger_times == patience:
                 print("Early stopping!\nStart to test process.")
-                torch.save(net.state_dict(), config["model_path"] + "es_wien_cdistlr.pt")
+                torch.save(net.state_dict(), config["model_path"] + "es_djdot_b24.pt")
         else:
             print(f"trigger times: {trigger_times}")
             the_last_loss = the_current_loss
@@ -150,16 +151,16 @@ def main(
 #         del valid_loss, acc_mat
 #         # lrs.append(optimizer.param_groups[0]["lr"])
         # print("learning rates are:",lrs
+    del train_loss,transfer_loss,acc_mat, val_acc_mat,valid_loss
     print("finished")
-    torch.save(net.state_dict(), config["model_path"] + "DA_wien_cdistlr.pt")
+    torch.save(net.state_dict(), config["model_path"] + "DA_djot_b24.pt")
     gc.collect()
     torch.cuda.empty_cache()
 
 
 
 if __name__ == "__main__":
-    torch.cuda.empty_cache()
+    # torch.cuda.empty_cache()
     wandb.login()
     wandb.init(project="server")
-    wandb.define_metric("E_Train_F1", summary="max")
     main(net)
