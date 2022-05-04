@@ -19,7 +19,7 @@ from torchvision import transforms, utils
 from torch.autograd import Variable
 
 # files
-from data_loader.dataset_ot import Dataset
+from data_loader.dataset import Dataset
 from utils.criterion import DiceLoss
 from utils import eval_metrics
 # from model.unet import UNet
@@ -117,17 +117,17 @@ def eval_epoch(epochs,dataloader):
             K+=K_step
             total_loss+=loss
 #             if iter_ % 100 == 0:
-            if epochs % 5 == 0:
-#                 clear_output()
-                # rgb = data.data.cpu().numpy()[0]
-                pred = output.data.cpu().numpy()[0]
-                gt = target.data.cpu().numpy()[0]
+            # if epochs % 5 == 0:
+# #                 clear_output()
+#                 # rgb = data.data.cpu().numpy()[0]
+#                 pred = output.data.cpu().numpy()[0]
+#                 gt = target.data.cpu().numpy()[0]
 #                 visualize_predict(np.moveaxis(rgb,0,2),np.moveaxis(gt,0,2), np.moveaxis(pred,0,2))
 #                 plt.show()
-                images_pred = wandb.Image(pred, caption="Top: Output, Bottom: Input")
-                # images_rgb = wandb.Image(rgb, caption="Top: Output, Bottom: Input")
-                images_gt = wandb.Image(gt, caption="Top: Output, Bottom: Input")
-                wandb.log({"Ground truth": images_gt,"Prediction": images_pred})
+                # images_pred = wandb.Image(pred, caption="Top: Output, Bottom: Input")
+                # # images_rgb = wandb.Image(rgb, caption="Top: Output, Bottom: Input")
+                # images_gt = wandb.Image(gt, caption="Top: Output, Bottom: Input")
+                # wandb.log({"Ground truth": images_gt,"Prediction": images_pred})
                 
 #             iter_ += 1
             # wandb.log({'Val_Loss': loss,'Val_F1': f1_source_step,'Val_acc':acc_step,'Val_IoU':IoU_step})
@@ -198,11 +198,11 @@ def SimpleUnet(net):
             trigger_times += 1
             if test_f1 <= acc_mat[0]:
                 test_f1 = acc_mat[0]
-                torch.save(net.state_dict(), config["model_path"] + "f1_simple_plz3.pt")
+                torch.save(net.state_dict(), config["model_path"] + "f1_simple_all.pt")
             print("trigger times:", trigger_times)
             if trigger_times == patience:
                 print("Early stopping!\nStart to test process.")
-                torch.save(net.state_dict(), config["model_path"] + "es_simple_plz3.pt")
+                torch.save(net.state_dict(), config["model_path"] + "es_simple_all.pt")
         else:
             print(f"trigger times: {trigger_times}")
             the_last_loss = the_current_loss
@@ -210,7 +210,7 @@ def SimpleUnet(net):
         del valid_loss, acc_mat,train_loss, t_acc_mat
         # lrs.append(optimizer.param_groups[0]["lr"])
         # print("learning rates are:",lrs
-    torch.save(net.state_dict(), config["model_path"] + "simple_plz3.pt")
+    torch.save(net.state_dict(), config["model_path"] + "simple_all.pt")
     print("finished")
     
     

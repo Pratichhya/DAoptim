@@ -9,7 +9,7 @@ import optuna
 import joblib
 # from model.unet import UNet
 from train_tune import Train
-from data_loader.dataset_ot import Dataset
+from data_loader.dataset import Dataset
 import gc
 
 
@@ -39,14 +39,6 @@ net = psmp.Unet( encoder_name="resnet34",
    classes=1,                      
 )
 net.cuda()
-
-saving_interval = 10
-lrs = []
-
-# early stopping patience; how long to wait after last time validation loss improved.
-patience = 5
-the_last_loss = 100
-
 
 def main_hyper(trial):
     set_seed(42)
@@ -79,32 +71,16 @@ def main_hyper(trial):
     scaler = torch.cuda.amp.GradScaler()
     
     cfg = {
-        # # 'n_epochs' : trial.suggest_int('n_epochs',10,50),
-        # 'n_epochs' : 2,
-        # 'seed' : 0,
-        # # 'lr'       : 0.005,
-        # # 'momentum' : 0.5,
-        # # 'optimizer': optim.SGD,
-        # 'n_iter' : trial.suggest_int('n_iter',100,500),
-        # 'lr': trial.suggest_loguniform('lr', 1e-3, 1e-1),
-        # 'momentum' : trial.suggest_uniform('momentum', 0.4, 0.99),
-        # 'optimizer': optim.SGD,
-        # # 'optimizer': trial.suggest_categorical('optimizer',[optim.SGD, optim.RMSprop, optim.Adam]),
-        # 'weight_decay': 0.0005,
-        # 'save_model' : False,
-        # 'alpha':trial.suggest_uniform('alpha', 0.01, 0.1),
-        # 'lambda_t':trial.suggest_uniform('lambda_t', 0.09, 0.1),
-        # 'reg_m':trial.suggest_uniform('reg_m', 0.01, 0.09)
-        # 'n_epochs' : trial.suggest_int('n_epochs',10,50),
-        "n_epochs":30,
+        "n_epochs":50,
         "seed": 42,
-        "lr": trial.suggest_loguniform('lr', 1e-4, 1e-1),
+        "lr": trial.suggest_loguniform('lr', 1e-5, 1e-2),
         "momentum": 0.6,
         "optimizer": optim.Adam,
         "save_model": False,
-        'alpha':trial.suggest_uniform('alpha', 0.07, 2),
+        'alpha':trial.suggest_uniform('alpha', 0.07, 5),
         'lambda_t':trial.suggest_uniform('lambda_t', 0.001, 0.9),
-        'reg_m':trial.suggest_uniform('reg_m', 0.01, 0.09)
+        'reg_m':trial.suggest_uniform('reg_m', 0.01, 0.09),
+        'reg':trial.suggest_uniform('reg', 0.01, 0.09)
         
     }
 
@@ -117,61 +93,63 @@ def main_hyper(trial):
     # optimizer = cfg['optimizer'](model.parameters(), lr=cfg['lr'],momentum=cfg['momentum'], weight_decay=cfg['weight_decay'])
     # optimizer = cfg["optimizer"](model.parameters(), lr=cfg["lr"], weight_decay=cfg['weight_decay'])
     optimizer=optim.Adam(net.parameters(),lr=cfg["lr"])
-    schedule_param = config["lr_param"]
-    scheduler = optim.lr_scheduler.MultiStepLR(
-        optimizer, [1, 10, 20], gamma=schedule_param["gamma"]
-    )
-
+    f1 = []
+    loss = []
+    val_f1 =[]
+    config["trial.number"] = trial.number
+    
+    '''reinit argument is necessary to call wandb.init method multiple times in the same process because objective is called multiple times in Optuna’s optimization.'''
+    
+    wandb.init(project="optuna",  group=STUDY_NAME,config=cfg, reinit=True)
+    
     for epoch in range(1, cfg["n_epochs"] + 1):
         print(f"in epoch {epoch}")
         print("----------------------Traning phase-----------------------------")
-        train_loss,transfer_loss, acc_mat = Train.train_epoch(
-            net,
-            optimizer,
-            source_dataloader,
-            target_dataloader,
+        train_loss,transfer_loss, acc_mat = Train.train_epoch(net,optimizer,source_dataloader,target_dataloader,
             cfg["alpha"],
             cfg["lambda_t"],
-            cfg["reg_m"],
-            scaler            
+            cfg["reg"],
+            cfg["reg_m"],            
         )
-        f1 = acc_mat[0]
-        iou = acc_mat[2]
-        loss = train_loss
-        
-        print(f"Training loss in average for epoch {str(epoch)} is {train_loss}")
-        print(f"Training F1 in average for epoch {str(epoch)} is {acc_mat[0]}")
-        print(f"Training Accuracy in average for epoch {str(epoch)} is {acc_mat[1]}")
-        print(f"Training IOU in average for epoch {str(epoch)} is {acc_mat[2]}")
+        # f1.append(acc_mat[0])
+        # loss.append(train_loss)
+        # send = sum(f1/len(f1))
+        # # send = 1-(sum(loss)/len(loss))
+        # print(f"Training loss in average for epoch {str(epoch)} is {train_loss}")
+        # print(f"Training F1 in average for epoch {str(epoch)} is {acc_mat[0]}")
+        # print(f"Training Accuracy in average for epoch {str(epoch)} is {acc_mat[1]}")
+        # print(f"Training IOU in average for epoch {str(epoch)} is {acc_mat[2]}")
+        # print(f"f1 was {f1} and returned is{send}")
         del train_loss, acc_mat
         torch.cuda.empty_cache()
-        # print("----------------------Evaluation phase-----------------------------")
-#         valid_loss, acc_mat = Train.eval_epoch(
-#             epoch,
-#             net,
-#             val_source_dataloader,
-#             val_target_dataloader,
-#             cfg["alpha"],
-#             cfg["lambda_t"],
-#             cfg["reg_m"],
-#         )
-        
-#         # print(f"Evaluation loss in average for epoch {str(epoch)} is {valid_loss}")
-#         # print(f"Evaluation F1 in average for epoch {str(epoch)} is {acc_mat[0]}")
-#         # print(f"Evaluation Accuracy in average for epoch {str(epoch)} is {acc_mat[1]}")
-#         # print(f"Evaluation IOU in average for epoch {str(epoch)} is {acc_mat[2]}")
-        # del valid_loss, acc_mat
-
-    if cfg["save_model"]:
-        torch.save(model.state_dict(), "hyperparam.pt")
-    return (1-loss)
+        print("----------------------Evaluation phase-----------------------------")
+        val_acc_mat = Train.eval_epoch(
+            net,
+            val_source_dataloader,
+            val_target_dataloader,
+            cfg["alpha"],
+            cfg["lambda_t"],
+            cfg["reg"],
+            cfg["reg_m"], 
+        )        
+        print(f"Evaluation F1 in average for epoch {str(epoch)} is {val_acc_mat[0]}")
+        print(f"Evaluation Accuracy in average for epoch {str(epoch)} is {val_acc_mat[1]}")
+        print(f"Evaluation IOU in average for epoch {str(epoch)} is {val_acc_mat[2]}")
+        send = val_acc_mat[0]
+        # report validation accuracy to wandb
+        wandb.log(data={"validation accuracy": val_acc_mat[1],"validation F1": val_acc_mat[0]}, step=epoch)
+        del valid_loss, val_acc_mat
+    # if cfg["save_model"]:
+    #     torch.save(model.state_dict(), "hyperparam.pt")
+    return send
 
 
 if __name__ == "__main__":
-    sampler = optuna.samplers.TPESampler()
+    sampler = optuna.samplers.TPESampler(seed=set_seed(42))
     study = optuna.create_study(sampler=sampler, direction="maximize")
-    study.optimize(func=main_hyper, n_trials=6)
+    study.optimize(func=main_hyper, n_trials=10)
     joblib.dump(
         study,
-        "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/model/jumbot_optuna.pkl",
+        "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/model/opt_f1/all_hp_v0.pkl",
     )
+

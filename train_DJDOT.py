@@ -16,10 +16,11 @@ from torchvision import transforms, utils
 from torch.autograd import Variable
 import torchmetrics
 import os
+from scipy.spatial.distance import cdist
 
 # files
 from data_loader.dataset_ot import Dataset
-from utils.criterion import DiceLoss,FocalTverskyLoss
+from utils.criterion import DiceLoss,FocalTverskyLoss,BCELoss
 from utils import eval_metrics
 
 
@@ -31,6 +32,7 @@ with open(
     config = json.load(read_file)
 
 Dice = DiceLoss()
+# Dice = BCELoss()
 
 
 class Train:
@@ -73,24 +75,29 @@ class Train:
             #M_sce = - torch.mm(ys, torch.transpose(torch.log(f_g_xt), 0, 1))
 
             #transportation cost matrix
-            M_embed = torch.cdist(g_xs, g_xt) ** 2# Term on embedded data
+            # M_embed = torch.cdist(g_xs, g_xt) ** 2# Term on embedded data
+            
+            #sklearn cdist
+            M_embed = torch.Tensor(cdist(g_xs.detach().cpu().numpy(),g_xt.detach().cpu().numpy(), metric='sqeuclidean'))
+            M_embed = M_embed.cuda()
+            M_embed = M_embed/262144
 
             #computed total ground cost
             M = M_embed*alpha + lambda_t * target_loss 
-
+            del M_embed
             #OT computation
             a, b = ot.unif(g_xs.size()[0]), ot.unif(g_xt.size()[0])
-            gamma_emd = ot.emd(a, b, M.detach().cpu().numpy())
-            # gamma_ot = ot.sinkhorn(a, b, M.detach().cpu().numpy(), reg_m)
+            # gamma_emd = ot.emd(a, b, M.detach().cpu().numpy())
+            gamma_ot = ot.sinkhorn(a, b, M.detach().cpu().numpy(), reg_m)
             # gamma_ot = ot.unbalanced.sinkhorn_knopp_unbalanced(a, b, M.detach().cpu().numpy(),0.01, reg_m=reg_m) 
-            gamma = torch.from_numpy(gamma_emd).float().cuda()  # Transport plan
+            gamma = torch.from_numpy(gamma_ot).float().cuda()  # Transport plan
             transfer_loss = torch.sum(gamma * M)
 
             # print(f"transfer_loss:{transfer_loss}")
 
             # total training loss
             total_loss= classifier_loss + transfer_loss
-
+            del gamma,M,gamma_ot #gamma_ot
             # backward+optimzer
             total_loss.backward()
             # scaler.scale(total_loss).backward()
@@ -119,11 +126,11 @@ class Train:
             target_losses += target_loss.detach().cpu().numpy()
             
             del xs, xt, ys,yt,f_g_xs,f_g_xt,
-            torch.cuda.empty_cache()
-            wandb.log({'train_Loss': total_loss,'train_F1': f1_source_step,'train_acc':acc_step,'train_IoU':IoU_step,'f1_target': f1_target,'acc_target':acc_target,'IoU_target':IoU_target,'classifier_loss':classifier_loss,'transfer_loss':transfer_loss,'target_loss':target_loss})
+            # torch.cuda.empty_cache()
+            # wandb.log({'train_Loss': total_loss,'train_F1': f1_source_step,'train_acc':acc_step,'train_IoU':IoU_step,'f1_target': f1_target,'acc_target':acc_target,'IoU_target':IoU_target,'classifier_loss':classifier_loss,'transfer_loss':transfer_loss,'target_loss':target_loss})
             # wandb.log({'train_Loss': training_losses/config["num_iterations"],'train_F1': f1_source/config["num_iterations"],'train_acc':acc/config["num_iterations"],'train_IoU':IoU/config["num_iterations"],'f1_target': f1_targets/config["num_iterations"],'acc_target':acc_tr/config["num_iterations"],'IoU_target':IoU_tr/config["num_iterations"],'classifier_loss':classifier_losses/config["num_iterations"],'transfer_loss':transfer_losses/config["num_iterations"],'target_loss':target_losses/config["num_iterations"]})
-        del classifier_loss,transfer_loss,target_loss,f1_target,acc_target,K_target,IoU_target,f1_source_step,acc_step,IoU_step,K_step,M,gamma,gamma_emd
-        return (training_losses/config["num_iterations"]),[f1_tr/config["num_iterations"],acc_tr/config["num_iterations"],IoU_tr/config["num_iterations"],K_tr/config["num_iterations"]]
+        del classifier_loss,transfer_loss,target_loss,f1_target,acc_target,K_target,IoU_target,f1_source_step,acc_step,IoU_step,K_step
+        return (training_losses/config["num_iterations"]),(transfer_losses/config["num_iterations"]),[f1_tr/config["num_iterations"],acc_tr/config["num_iterations"],IoU_tr/config["num_iterations"],K_tr/config["num_iterations"]]
     
     def eval_epoch(e, net, val_source_dataloader, val_target_dataloader):
      # def eval_epoch(e, net, val_source_dataloader, val_target_dataloader,alpha,lambda_t,reg_m,itr):
@@ -170,9 +177,14 @@ class Train:
                 # print(f"target segmentation loss is:{target_loss}")
 
                 # transportation cost matrix
-                eval_M_embed = (
-                    torch.cdist(val_g_xs, val_g_xt) ** 2
-                )  
+                # eval_M_embed = (
+                #     torch.cdist(val_g_xs, val_g_xt) ** 2
+                # )  
+                #sklearn cdist
+                eval_M_embed = torch.Tensor(cdist(val_g_xs.detach().cpu().numpy(),val_g_xt.detach().cpu().numpy(), metric='sqeuclidean'))
+                eval_M_embed = eval_M_embed.cuda()
+                eval_M_embed = eval_M_embed/262144
+                
                 # Term on embedded data
                 # print(f"g_xs{g_xs.size()}, g_xt {g_xt.size()}")
 
@@ -181,15 +193,16 @@ class Train:
 
                 # OT computation
                 val_a, val_b = ot.unif(val_g_xs.size()[0]), ot.unif(val_g_xt.size()[0])
-                val_gamma_emd = ot.emd(val_a, val_b, eval_M.detach().cpu().numpy())
-                # val_gamma_ot = ot.sinkhorn(val_a, val_b, eval_M.detach().cpu().numpy(), reg_m )
+                del eval_M_embed
+                # val_gamma_emd = ot.emd(val_a, val_b, eval_M.detach().cpu().numpy())
+                val_gamma_ot = ot.sinkhorn(val_a, val_b, eval_M.detach().cpu().numpy(), reg_m )
                 # val_gamma_ot = ot.unbalanced.sinkhorn_knopp_unbalanced(a, b, M.detach().cpu().numpy(),0.01, reg_m=reg_m)
-                val_gamma = (torch.from_numpy(val_gamma_emd).float().cuda()
+                val_gamma = (torch.from_numpy(val_gamma_ot).float().cuda()
                 )  # Transport plan
                 eval_transfer_loss = torch.sum(val_gamma * eval_M)
                 eval_total_loss = eval_classifier_loss + eval_transfer_loss
                 # eval_total_loss = eval_transfer_loss
-
+                del val_gamma,eval_M,val_gamma_ot 
 
                 # evaluation
 
@@ -212,29 +225,28 @@ class Train:
                 transfer_losses += eval_transfer_loss.detach().cpu().numpy()
                 target_losses += eval_target_loss.detach().cpu().numpy()
            
-                if e % 10 == 0:
-                    rgb = val_xt.data.cpu().numpy()[0]
-                    pred = np.rint(val_f_g_xt.data.cpu().numpy()[0])
-                    gt = val_yt.data.cpu().numpy()[0]
-                    # tiff.imwrite(
-                    #    os.path.join(config["eval_output"], f"rgb_val{i+1}" + ".tif"),
-                    #    rgb,
-                    # )
-                    # tiff.imwrite(
-                    #    os.path.join(config["eval_output"], f"pred_val{i+1}" + ".tif"),
-                    #    pred,
-                    # )
-                    images_pred = wandb.Image(pred, caption="Top: Output, Bottom: Input")
-                    # images_rgb = wandb.Image(rgb, caption="Top: Output, Bottom: Input")
-                    images_gt = wandb.Image(gt, caption="Top: Output, Bottom: Input")
-                    wandb.log({"Ground truth": images_gt,"Prediction": images_pred})
+                # if e % 10 == 0:
+                #     rgb = val_xt.data.cpu().numpy()[0]
+                #     pred = np.rint(val_f_g_xt.data.cpu().numpy()[0])
+                #     gt = val_yt.data.cpu().numpy()[0]
+                #     # tiff.imwrite(
+                #     #    os.path.join(config["eval_output"], f"rgb_val{i+1}" + ".tif"),
+                #     #    rgb,
+                #     # )
+                #     # tiff.imwrite(
+                #     #    os.path.join(config["eval_output"], f"pred_val{i+1}" + ".tif"),
+                #     #    pred,
+                #     # )
+                #     images_pred = wandb.Image(pred, caption="Top: Output, Bottom: Input")
+                #     # images_rgb = wandb.Image(rgb, caption="Top: Output, Bottom: Input")
+                #     images_gt = wandb.Image(gt, caption="Top: Output, Bottom: Input")
+                #     wandb.log({"Ground truth": images_gt,"Prediction": images_pred})
                     
-                    del val_xs, val_xt, val_ys,val_yt,val_f_g_xt,val_g_xs 
-                    torch.cuda.empty_cache()
+                del val_xs, val_xt, val_ys,val_yt,val_f_g_xt,val_g_xs 
+                # torch.cuda.empty_cache()
 
-                wandb.log({'val_train_Loss': eval_total_loss,'val_train_F1': f1_source_step,'val_train_acc':acc_step,'val_train_IoU':IoU_step,'val_f1_target': val_f1_target,'val_acc_target':val_acc_target,'val_IoU_target':val_IoU_target,'val_classifier_loss':eval_classifier_loss,'val_transfer_loss':eval_transfer_loss,'val_target_loss':eval_target_loss})
-                # wandb.log({'val_train_Loss': training_losses/config["num_iterations"],'val_train_F1': f1_source/config["num_iterations"],'val_train_acc':acc/config["num_iterations"],'val_train_IoU':IoU/config["num_iterations"],'val_f1_target': f1_t/config["num_iterations"],'val_acc_target':acc_t/config["num_iterations"],'val_IoU_target':IoU_t/config["num_iterations"],'val_classifier_loss':classifier_losses/config["num_iterations"],'val_transfer_loss':transfer_losses/config["num_iterations"],'val_target_loss':target_losses/config["num_iterations"]})
+                # wandb.log({'val_train_Loss': eval_total_loss,'val_train_F1': f1_source_step,'val_train_acc':acc_step,'val_train_IoU':IoU_step,'val_f1_target': val_f1_target,'val_acc_target':val_acc_target,'val_IoU_target':val_IoU_target,'val_classifier_loss':eval_classifier_loss,'val_transfer_loss':eval_transfer_loss,'val_target_loss':eval_target_loss})
         
-        del eval_classifier_loss,eval_transfer_loss,eval_target_loss, val_f1_target, val_acc_target,val_IoU_target,val_K_target,f1_source_step,acc_step,IoU_step,val_gamma,val_gamma_emd
-        return (training_losses/config["num_iterations"]),[f1_t/config["num_iterations"],acc_t/config["num_iterations"],IoU_t/config["num_iterations"],K_t/config["num_iterations"]]
+            del eval_classifier_loss,eval_transfer_loss,eval_target_loss, val_f1_target, val_acc_target,val_IoU_target,val_K_target,f1_source_step,acc_step,IoU_step
+        return (training_losses/config["num_iterations"]),(transfer_losses/config["num_iterations"]),[f1_t/config["num_iterations"],acc_t/config["num_iterations"],IoU_t/config["num_iterations"],K_t/config["num_iterations"]]
 

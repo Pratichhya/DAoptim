@@ -1,0 +1,5 @@
+
+ time it took to run jumbot model with all VHR dataset is 23:54:25.75
+ time it took to run jumbot model with all VHR dataset is 16:06:42.70
+ time it took to run jumbot model with all minawao dataset is 03:41:49.96
+ time it took to run jumbot model with chicago to wien is 15:28:33.13

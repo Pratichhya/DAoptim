@@ -279,10 +279,12 @@ class Dataset():
             
     def array_torch(self):
         if os.path.exists("data_loader/npy/Xt_chicago.npy") and os.path.exists("data_loader/npy/Yt_chicago.npy") and os.path.exists("data_loader/npy/Xs_wien.npy"):
-            self.Xt_train  = (np.load(self.data_folder + "/npy/Xtest_chicago.npy"))/255
-            self.Yt_train   = np.load(self.data_folder + "/npy/Ytest_chicago.npy")
-            self.Xs_train = (np.load(self.data_folder + "/npy/Xtest_wien.npy"))/255
-            self.Ys_train = np.load(self.data_folder + "/npy/Ytest_wien.npy")
+            # self.Xt_train  = (np.load(self.data_folder + "/npy/Xtest_chicago.npy"))/255
+            # self.Yt_train   = np.load(self.data_folder + "/npy/Ytest_chicago.npy")
+            self.Xt_train = (np.load(self.data_folder + "/npy/Xt_train.npy")[:,:3,:,:])/255
+            self.Yt_train = np.load(self.data_folder + "/npy/Yt_train.npy")
+            self.Xs_train = (np.load(self.data_folder + "/npy/Xs_train.npy")[:,:3,:,:])/255
+            self.Ys_train = np.load(self.data_folder + "/npy/Ys_train.npy")
             
             print("----------------------ready to use dataset--------------")
             print("Found already existing npy")
@@ -309,7 +311,7 @@ class Dataset():
             self.tensor_xs_train = TensorDataset(self.tensor_xs,self.tensor_ys) 
             
             #split into train and validation set
-            sn_train_examples = int(len(self.tensor_xs_train) * config["valid_ratio"])
+            sn_train_examples = int(len(self.tensor_xs_train) * 0.9)
             sn_valid_examples = len(self.tensor_xs_train) - sn_train_examples
             self.source_train_partly, self.source_valid_partly = random_split(self.tensor_xs_train,[sn_train_examples, sn_valid_examples])
             print("--------------------------------------------------------------------")
@@ -383,8 +385,8 @@ class Dataset():
             
         elif self.for_what == "testing":
             if os.path.exists(self.data_folder + "/npy/Xtest_chicago.npy"):
-                self.Xtest = np.load(self.data_folder + "npy/Xtest_chicago.npy")
-                self.Ytest = np.load(self.data_folder + "npy/Ytest_chicago.npy")
+                self.Xtest = (np.load(self.data_folder + "npy/Xtest.npy")/255)[:,:3,:,:]
+                self.Ytest = np.load(self.data_folder + "npy/Ytest.npy")
                 # percentage=(np.count_nonzero(self.Ytest.reshape(self.Ytest.shape[0],-1),axis=1)/(256*256))*100
                 # sel_index=np.where(percentage>1.0)
                 # # print(percentage)
@@ -404,7 +406,7 @@ class Dataset():
             self.tensor_xp = torch.Tensor(self.Xtest.astype(np.float16)) 
             self.tensor_yp = torch.Tensor(self.Ytest.astype(np.float16)) 
             self.tensor_test = TensorDataset(self.tensor_xp,self.tensor_yp) 
-            self.test_dataloader = DataLoader(self.tensor_test, batch_size=4,pin_memory= True,worker_init_fn=np.random.seed(0)) 
+            self.test_dataloader = DataLoader(self.tensor_test, batch_size=12,pin_memory= True,worker_init_fn=np.random.seed(0)) 
             print("Finally atleast test dataloader section works 😌")
         else:
             print("Please be sure you know what you are doing👀")

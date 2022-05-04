@@ -19,7 +19,7 @@ import os
 from scipy.spatial import distance
 
 # files
-from data_loader.dataset_ot import Dataset
+from data_loader.dataset import Dataset
 from utils.criterion import DiceLoss,FocalTverskyLoss
 from utils import eval_metrics
 from scipy.spatial.distance import cdist
@@ -62,59 +62,58 @@ class Train:
             xs, xt, ys,yt = Variable(xs).cuda(), Variable(xt).cuda(), Variable(ys).cuda(), Variable(yt).cuda()
 
             # forward
-            with torch.cuda.amp.autocast():
-                g_xs, f_g_xs = net(xs)  # source embedded data
-                g_xt, f_g_xt = net(xt)  # target embedded data
-                del xs, xt
-                # segmentation loss
-                classifier_loss = Dice(f_g_xs, ys)
+            # with torch.cuda.amp.autocast():
+            g_xs, f_g_xs = net(xs)  # source embedded data
+            g_xt, f_g_xt = net(xt)  # target embedded data
+            del xs, xt
+            # segmentation loss
+            classifier_loss = Dice(f_g_xs, ys)
 
-                #target loss term on labels
-                """loss_target = loss_fn(ys, f_g_xt)"""
-                # target_loss = Dice(f_g_xt, ys)
-                # v_ys = ys.view(ys.size(0),-1)
-                # v_f_g_xt = f_g_xt.view(f_g_xt.size(0),-1)
-                # # print(f"v_ys{v_ys.size(1)}")
-                # # print(f"v_f_g_xt{v_f_g_xt.shape}")
-                # # print(f"f_g_xt{f_g_xt.shape}")
-                # # print(f"ys{ys.shape}")
-                # # print(f"g_xs{g_xs.size(1)}")
-                # # print(f"g_xt{g_xt.shape}")
+            #target loss term on labels
+            """loss_target = loss_fn(ys, f_g_xt)"""
+            # target_loss = Dice(f_g_xt, ys)
+            v_ys = ys.view(ys.size(0),-1)
+            v_f_g_xt = f_g_xt.view(f_g_xt.size(0),-1)
+            # # print(f"v_ys{v_ys.size(1)}")
+            # # print(f"v_f_g_xt{v_f_g_xt.shape}")
+            # # print(f"f_g_xt{f_g_xt.shape}")
+            # # print(f"ys{ys.shape}")
+            # # print(f"g_xs{g_xs.size(1)}")
+            # # print(f"g_xt{g_xt.shape}")
 
-                # target_loss = (torch.cdist(v_ys,v_f_g_xt)**2)#/v_ys.size(1)
-                target_loss = cdist(v_ys.detach().cpu().numpy(),v_f_g_xt.detach().cpu().numpy(), metric='sqeuclidean')
-                target_loss = torch.Tensor(target_loss).cuda()
-                target_loss = target_loss/65536
+            target_loss = cdist(v_ys.detach().cpu().numpy(),v_f_g_xt.detach().cpu().numpy(), metric='sqeuclidean')
+            target_loss = torch.Tensor(target_loss).cuda()
+            target_loss = target_loss/65536
 
-                #transportation cost matrix
-                # M_embed = (torch.cdist(g_xs, g_xt) ** 2)#/g_xs.size(1) #Term on embedded data
-                M_embed = torch.Tensor(cdist(g_xs.detach().cpu().numpy(),g_xt.detach().cpu().numpy(), metric='sqeuclidean'))
-                M_embed = M_embed.cuda()
-                M_embed = M_embed/262144
-                #computed total ground cost
-                M = M_embed*alpha + lambda_t * target_loss
+            #transportation cost matrix
+            # M_embed = (torch.cdist(g_xs, g_xt) ** 2)#/g_xs.size(1) #Term on embedded data
+            M_embed = torch.Tensor(cdist(g_xs.detach().cpu().numpy(),g_xt.detach().cpu().numpy(), metric='sqeuclidean'))
+            M_embed = M_embed.cuda()
+            M_embed = M_embed/262144
+            #computed total ground cost
+            M = M_embed*alpha + lambda_t * target_loss
 
-                #OT computation
-                a, b = ot.unif(g_xs.size()[0]), ot.unif(g_xt.size()[0])
-                del M_embed
-                # gamma_emd = ot.emd(a, b, M.detach().cpu().numpy())
-                # gamma_ot = ot.sinkhorn(a, b, M.detach().cpu().numpy(), reg_m)
-                gamma_ot = ot.unbalanced.sinkhorn_knopp_unbalanced(a, b, M.detach().cpu().numpy(),0.01, reg_m=reg_m) 
-                gamma = torch.from_numpy(gamma_ot).float().cuda()  # Transport plan
-                transfer_loss = torch.sum(gamma * M)
+            #OT computation
+            a, b = ot.unif(g_xs.size()[0]), ot.unif(g_xt.size()[0])
+            del M_embed
+            # gamma_emd = ot.emd(a, b, M.detach().cpu().numpy())
+            # gamma_ot = ot.sinkhorn(a, b, M.detach().cpu().numpy(), reg_m)
+            gamma_ot = ot.unbalanced.sinkhorn_knopp_unbalanced(a, b, M.detach().cpu().numpy(),0.5, reg_m=reg_m) 
+            gamma = torch.from_numpy(gamma_ot).float().cuda()  # Transport plan
+            transfer_loss = torch.sum(gamma * M)
 
-                # print(f"transfer_loss:{transfer_loss}")
+            # print(f"transfer_loss:{transfer_loss}")
 
-                # total training loss
-                total_loss= classifier_loss + transfer_loss
-                del gamma,M,gamma_ot#,gamma_emd
+            # total training loss
+            total_loss= classifier_loss + transfer_loss
+            del gamma,M,gamma_ot
 
             # backward+optimzer
-            # total_loss.backward()
-            scaler.scale(total_loss).backward()
-            scaler.step(optimizer)
-            # optimizer.step()
-            scaler.update()
+            total_loss.backward()
+            # scaler.scale(total_loss).backward()
+            # scaler.step(optimizer)
+            optimizer.step()
+            # scaler.update()
 
             #evaluation
             f1_source_step,acc_step,IoU_step,K_step = eval_metrics.f1_score(ys,f_g_xs)
@@ -152,7 +151,7 @@ class Train:
         alpha = config["alpha"]
         lambda_t = config["lambda_t"]
         reg_m = config["reg_m"]
-        # num_iteration = itr
+        eval_itr = int(config["num_iterations"] *0.7)
         # for validation set
         with torch.no_grad():
             # set the model in evaluation mode
@@ -171,53 +170,53 @@ class Train:
                     Variable(val_ys).cuda(),
                     Variable(val_yt).cuda()
                 )
-                with torch.cuda.amp.autocast():
+                # with torch.cuda.amp.autocast():
                     # forward
-                    val_g_xs, val_f_g_xs = net(val_xs)  # source embedded data
-                    val_g_xt, val_f_g_xt = net(val_xt)  # target embedded data
-                    # pred_xt = torch.argmax(f_g_xt, dim=0)
-                    del val_xt, val_xs
-                    # segmentation loss
-                    eval_classifier_loss = Dice(val_f_g_xs, val_ys)
-                    # print(f"classifier loss is:{classifier_loss}")
+                val_g_xs, val_f_g_xs = net(val_xs)  # source embedded data
+                val_g_xt, val_f_g_xt = net(val_xt)  # target embedded data
+                # pred_xt = torch.argmax(f_g_xt, dim=0)
+                del val_xt, val_xs
+                # segmentation loss
+                eval_classifier_loss = Dice(val_f_g_xs, val_ys)
+                # print(f"classifier loss is:{classifier_loss}")
 
-                    # target loss term on labels
-                    """loss_target = loss_fn(ys, f_g_xt)"""
-                    # eval_target_loss = Dice(val_f_g_xt, val_ys)
-                    # print(f"target segmentation loss is:{target_loss}")
-                    eval_val_ys = val_ys.view(val_ys.size(0),-1)
-                    eval_val_f_g_xt = val_f_g_xt.view(val_f_g_xt.size(0),-1)
+                # target loss term on labels
+                """loss_target = loss_fn(ys, f_g_xt)"""
+                # eval_target_loss = Dice(val_f_g_xt, val_ys)
+                # print(f"target segmentation loss is:{target_loss}")
+                eval_val_ys = val_ys.view(val_ys.size(0),-1)
+                eval_val_f_g_xt = val_f_g_xt.view(val_f_g_xt.size(0),-1)
 
-                    eval_target_loss = cdist(eval_val_ys.detach().cpu().numpy(),eval_val_f_g_xt.detach().cpu().numpy(), metric='sqeuclidean')
-                    eval_target_loss = torch.Tensor(eval_target_loss).cuda()
-                    eval_target_loss = eval_target_loss/65536
+                eval_target_loss = cdist(eval_val_ys.detach().cpu().numpy(),eval_val_f_g_xt.detach().cpu().numpy(), metric='sqeuclidean')
+                eval_target_loss = torch.Tensor(eval_target_loss).cuda()
+                eval_target_loss = eval_target_loss/65536
 
-                    # transportation cost matrix
-                    # eval_M_embed = (torch.cdist(val_g_xs, val_g_xt) ** 2)  
-                    eval_M_embed = torch.Tensor(cdist(val_g_xs.detach().cpu().numpy(),val_g_xt.detach().cpu().numpy(), metric='sqeuclidean'))
-                    eval_M_embed = eval_M_embed.cuda()
-                    eval_M_embed = eval_M_embed/262144
-                    # Term on embedded data
-                    # print(f"g_xs{g_xs.size()}, g_xt {g_xt.size()}")
+                # transportation cost matrix
+                # eval_M_embed = (torch.cdist(val_g_xs, val_g_xt) ** 2)  
+                eval_M_embed = torch.Tensor(cdist(val_g_xs.detach().cpu().numpy(),val_g_xt.detach().cpu().numpy(), metric='sqeuclidean'))
+                eval_M_embed = eval_M_embed.cuda()
+                eval_M_embed = eval_M_embed/262144
+                # Term on embedded data
+                # print(f"g_xs{g_xs.size()}, g_xt {g_xt.size()}")
 
-                    # computed total ground cost ()
-                    eval_M = eval_M_embed * alpha + lambda_t * eval_target_loss
+                # computed total ground cost ()
+                eval_M = eval_M_embed * alpha + lambda_t * eval_target_loss
 
-                    # OT computation
-                    val_a, val_b = ot.unif(val_g_xs.size()[0]), ot.unif(val_g_xt.size()[0])
-                    del eval_M_embed
-                    # val_gamma_emd = ot.emd(val_a, val_b, eval_M.detach().cpu().numpy())
-                    # val_gamma_ot = ot.sinkhorn(val_a, val_b, eval_M.detach().cpu().numpy(), reg_m )
-                    val_gamma_ot = ot.unbalanced.sinkhorn_knopp_unbalanced(val_a, val_b, eval_M.detach().cpu().numpy(),0.01, reg_m=reg_m)
-                    val_gamma = (torch.from_numpy(val_gamma_ot).float().cuda()
-                    )  
-                    # Transport plan
-                    eval_transfer_loss = torch.sum(val_gamma * eval_M)
-                    eval_total_loss = eval_classifier_loss + eval_transfer_loss
-                    # eval_total_loss = eval_transfer_loss
-                    # print(f"validation transfer_loss:{eval_transfer_loss}")
-                    del val_gamma,eval_M,val_gamma_ot#,gamma_emd
-                # evaluation
+                # OT computation
+                val_a, val_b = ot.unif(val_g_xs.size()[0]), ot.unif(val_g_xt.size()[0])
+                del eval_M_embed
+                # val_gamma_emd = ot.emd(val_a, val_b, eval_M.detach().cpu().numpy())
+                # val_gamma_ot = ot.sinkhorn(val_a, val_b, eval_M.detach().cpu().numpy(), reg_m )
+                val_gamma_ot = ot.unbalanced.sinkhorn_knopp_unbalanced(val_a, val_b, eval_M.detach().cpu().numpy(),0.5, reg_m=reg_m)
+                val_gamma = (torch.from_numpy(val_gamma_ot).float().cuda()
+                )  
+                # Transport plan
+                eval_transfer_loss = torch.sum(val_gamma * eval_M)
+                eval_total_loss = eval_classifier_loss + eval_transfer_loss
+                # eval_total_loss = eval_transfer_loss
+                # print(f"validation transfer_loss:{eval_transfer_loss}")
+                del val_gamma,eval_M,val_gamma_ot
+                    # evaluation
 
                 f1_source_step,acc_step,IoU_step,K_step = eval_metrics.f1_score(val_ys,val_f_g_xs)
                 val_f1_target, val_acc_target, val_IoU_target, val_K_target = eval_metrics.f1_score(val_yt, val_f_g_xt)
@@ -239,10 +238,10 @@ class Train:
                 transfer_losses += eval_transfer_loss.detach().cpu().numpy()
                 target_losses += eval_target_loss.detach().cpu().numpy()
            
-                if e % 10 == 0:
-                    # rgb = val_xt.data.cpu().numpy()[0]
-                    pred = np.rint(val_f_g_xt.data.cpu().numpy()[0])
-                    gt = val_yt.data.cpu().numpy()[0]
+                # if e % 10 == 0:
+                #     # rgb = val_xt.data.cpu().numpy()[0]
+                #     pred = np.rint(val_f_g_xt.data.cpu().numpy()[0])
+                #     gt = val_yt.data.cpu().numpy()[0]
                     # tiff.imwrite(
                     #    os.path.join(config["eval_output"], f"rgb_val{i+1}" + ".tif"),
                     #    rgb,

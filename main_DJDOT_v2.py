@@ -6,10 +6,9 @@ import torch.optim as optim
 import wandb
 import numpy as np
 import os
-import time 
 
 # from model.unet import UNet
-from train import Train
+from train_DJDOT import Train
 from data_loader.dataset import Dataset
 import gc
 
@@ -44,7 +43,7 @@ net = psmp.Unet( encoder_name="resnet34",        # choose encoder, e.g. mobilene
    in_channels=3,                  # model input channels (1 for gray-scale images, 3 for RGB, etc.)
    classes=1,                      # model output channels (number of classes in your dataset)
 )
-# net.load_state_dict(torch.load(config["model_path"] + "DA_jumbot_all.pt"))
+# net.load_state_dict(torch.load(config["model_path"] + "es_djdot_BCE.pt"))
 net.cuda()
 
 saving_interval = 10
@@ -84,19 +83,20 @@ def main(
     parameter_num = sum(p.numel() for p in net.parameters() if p.requires_grad)
     print(f"The model has {parameter_num:,} trainable parameters")
 
-    ## set optimizer
-    # optimizer = optim.SGD(
-    #     net.parameters(), lr=config["base_lr"],momentum=0.66, weight_decay=0.0005
-    # )
-    optimizer=optim.Adam(net.parameters(),lr=config["base_lr"])
+    # set optimizer
+    optimizer = optim.SGD(
+        net.parameters(), lr=config["base_lr"],momentum=0.66, weight_decay=0.0005
+    )
+    # optimizer=optim.Adam(net.parameters(),lr=config["base_lr"])
 
-    # param_lr = []
-    # for param_group in optimizer.param_groups:
-    #     param_lr.append(param_group["lr"])
+    param_lr = []
+    for param_group in optimizer.param_groups:
+        param_lr.append(param_group["lr"])
     # We define the scheduler
-    # schedule_param = config["lr_param"]
-    # scheduler = optim.lr_scheduler.MultiStepLR(optimizer, [300, 1000, 20000], gamma=schedule_param["gamma"])
-    # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=10, eta_min=0)
+    schedule_param = config["lr_param"]
+    scheduler = optim.lr_scheduler.MultiStepLR(
+        optimizer, [300, 1000, 20000], gamma=schedule_param["gamma"]
+    )
     
     patience = 5
     the_last_loss = 10000000
@@ -106,30 +106,30 @@ def main(
     scaler = torch.cuda.amp.GradScaler()
     for e in range(1, NUM_EPOCHS + 1):
         print("----------------------Traning phase-----------------------------")
-        train_loss,transfer_loss, acc_mat = Train.train_epoch(net,optimizer, source_dataloader, target_dataloader, scaler)
+        train_loss,transfer_loss, acc_mat = Train.train_epoch(net,optimizer, source_dataloader, target_dataloader)
         print(f"Training loss in average for epoch {str(e)} is {train_loss}")
         print(f"transfer_loss in average for epoch {str(e)} is {transfer_loss}")
         print(f"Training F1 in average for epoch {str(e)} is {acc_mat[0]}")
         print(f"Training Accuracy in average for epoch {str(e)} is {acc_mat[1]}")
         print(f"Training IOU in average for epoch {str(e)} is {acc_mat[2]}")
-        print(f"Training K in average for epoch {str(e)} is {acc_mat[3]}")
+        # print(f"Training K in average for epoch {str(e)} is {acc_mat[3]}")
         # wandb.log({'E_Train Loss': train_loss,'E_Transfer Loss': transfer_loss,'E_Train_F1': acc_mat[0],'E_Train_acc':acc_mat[1],'E_Train_IoU':acc_mat[2]})
         # (total/batch)*epoch=iteration
         print("----------------------Evaluation phase-----------------------------")
-        valid_loss,valid_transfer, val_acc_mat = Train.eval_epoch(e, net, source_dataloader, target_dataloader,scaler)
+        valid_loss,valid_transfer, val_acc_mat = Train.eval_epoch(e, net, source_dataloader, target_dataloader)
         print(f"Evaluation Total loss in average for epoch {str(e)} is {valid_loss}")
         print(f"Evaluation Transfer loss in average for epoch {str(e)} is {valid_transfer}")
         print(f"Evaluation F1 in average for epoch {str(e)} is {val_acc_mat[0]}")
         print(f"Evaluation Accuracy in average for epoch {str(e)} is {val_acc_mat[1]}")
         print(f"Evaluation IOU in average for epoch {str(e)} is {val_acc_mat[2]}")
-        print(f"Evaluation K in average for epoch {str(e)} is {val_acc_mat[3]}")
+        # print(f"Evaluation K in average for epoch {str(e)} is {val_acc_mat[3]}")
         wandb.log({'E_Train Loss': train_loss,'E_Transfer Loss': transfer_loss,'E_Train_F1': acc_mat[0],'E_Train_acc':acc_mat[1],'E_Train_IoU':acc_mat[2],'E_Val_Loss': valid_loss,'E_Val_Transfer': valid_transfer,'E_Val_F1': val_acc_mat[0],'E_Val_acc':val_acc_mat[1],'E_Val_IoU':val_acc_mat[2]})
 
         # Decay Learning Rate kanxi: check this
-        # if e % 10 == 0:
-        #     scheduler.step()
+        if e % 10 == 0:
+            scheduler.step()
         # # Print Learning Rate
-        # print("last learning rate:", scheduler.get_last_lr(), "LR:", scheduler.get_lr())
+        print("last learning rate:", scheduler.get_last_lr(), "LR:", scheduler.get_lr())
 
         # Early stopping
         print("###################### Early stopping ##########################")
@@ -140,11 +140,11 @@ def main(
             trigger_times += 1
             if test_f1 <= val_acc_mat[0]:
                 test_f1 = val_acc_mat[0]
-                torch.save(net.state_dict(), config["model_path"] + "f1_jumbot_chica2wien.pt")
+                torch.save(net.state_dict(), config["model_path"] + "f1_djdot32.pt")
             print("trigger times:", trigger_times)
             if trigger_times == patience:
                 print("Early stopping!\nStart to test process.")
-                torch.save(net.state_dict(), config["model_path"] + "es_jumbot_chica2wien.pt")
+                torch.save(net.state_dict(), config["model_path"] + "es_djdot32.pt")
         else:
             print(f"trigger times: {trigger_times}")
             the_last_loss = the_current_loss
@@ -154,9 +154,9 @@ def main(
         # print("learning rates are:",lrs
     del train_loss,transfer_loss,acc_mat, val_acc_mat,valid_loss
     print("finished")
-    torch.save(net.state_dict(), config["model_path"] + "DA_jumbot_chica2wien.pt")
+    torch.save(net.state_dict(), config["model_path"] + "DA_djdot32.pt")
     gc.collect()
-    torch.cuda.empty_cache()
+    # torch.cuda.empty_cache()
 
 
 
@@ -164,16 +164,4 @@ if __name__ == "__main__":
     # torch.cuda.empty_cache()
     wandb.login()
     wandb.init(project="server")
-    file_object = open(config["time_file"]+'time_taken.txt', 'a')
-    start = time.time()
     main(net)
-    end = time.time()
-    hours, rem = divmod(end-start, 3600)
-    minutes, seconds = divmod(rem, 60)
-    print("{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
-    # Append at the end of file
-    file_object.write("\n time it took to run jumbot model with chicago to wien is {:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
-    # Close the file
-    file_object.close()
-
-    
