@@ -48,7 +48,7 @@ net = psmp.Unet( encoder_name="resnet34",        # choose encoder, e.g. mobilene
 net.cuda()
 
 saving_interval = 10
-NUM_EPOCHS = config["epoch"]
+NUM_EPOCHS = 30#config["epoch"]
 lrs = []
 
 
@@ -102,7 +102,7 @@ def main(
     the_last_loss = 10000000
     trigger_times = 0
     test_f1 = 0
-    
+    best_f1 = []
     scaler = torch.cuda.amp.GradScaler()
     for e in range(1, NUM_EPOCHS + 1):
         print("----------------------Traning phase-----------------------------")
@@ -123,7 +123,8 @@ def main(
         print(f"Evaluation Accuracy in average for epoch {str(e)} is {val_acc_mat[1]}")
         print(f"Evaluation IOU in average for epoch {str(e)} is {val_acc_mat[2]}")
         print(f"Evaluation K in average for epoch {str(e)} is {val_acc_mat[3]}")
-        wandb.log({'E_Train Loss': train_loss,'E_Transfer Loss': transfer_loss,'E_Train_F1': acc_mat[0],'E_Train_acc':acc_mat[1],'E_Train_IoU':acc_mat[2],'E_Val_Loss': valid_loss,'E_Val_Transfer': valid_transfer,'E_Val_F1': val_acc_mat[0],'E_Val_acc':val_acc_mat[1],'E_Val_IoU':val_acc_mat[2]})
+        best_f1.append(val_acc_mat[0])
+        # wandb.log({'E_Train Loss': train_loss,'E_Transfer Loss': transfer_loss,'E_Train_F1': acc_mat[0],'E_Train_acc':acc_mat[1],'E_Train_IoU':acc_mat[2],'E_Val_Loss': valid_loss,'E_Val_Transfer': valid_transfer,'E_Val_F1': val_acc_mat[0],'E_Val_acc':val_acc_mat[1],'E_Val_IoU':val_acc_mat[2]})
 
         # Decay Learning Rate kanxi: check this
         # if e % 10 == 0:
@@ -140,11 +141,11 @@ def main(
             trigger_times += 1
             if test_f1 <= val_acc_mat[0]:
                 test_f1 = val_acc_mat[0]
-                torch.save(net.state_dict(), config["model_path"] + "f1_jumbot_chica2wien.pt")
+                # torch.save(net.state_dict(), config["model_path"] + "f1_Minawao_nduta.pt")
             print("trigger times:", trigger_times)
             if trigger_times == patience:
                 print("Early stopping!\nStart to test process.")
-                torch.save(net.state_dict(), config["model_path"] + "es_jumbot_chica2wien.pt")
+                # torch.save(net.state_dict(), config["model_path"] + "es_Minawao_nduta.pt")
         else:
             print(f"trigger times: {trigger_times}")
             the_last_loss = the_current_loss
@@ -154,7 +155,9 @@ def main(
         # print("learning rates are:",lrs
     del train_loss,transfer_loss,acc_mat, val_acc_mat,valid_loss
     print("finished")
-    torch.save(net.state_dict(), config["model_path"] + "DA_jumbot_chica2wien.pt")
+    print(f"best f1 was:{max(best_f1)}")
+    # wandb.log({'best_f1': best_f1,})
+    # torch.save(net.state_dict(), config["model_path"] + "Minawao_nduta.pt")
     gc.collect()
     torch.cuda.empty_cache()
 
@@ -162,18 +165,18 @@ def main(
 
 if __name__ == "__main__":
     # torch.cuda.empty_cache()
-    wandb.login()
-    wandb.init(project="server")
-    file_object = open(config["time_file"]+'time_taken.txt', 'a')
-    start = time.time()
+    # wandb.login()
+    # wandb.init(project="minawao")
+    # file_object = open(config["time_file"]+'time_taken.txt', 'a')
+    # start = time.time()
     main(net)
-    end = time.time()
-    hours, rem = divmod(end-start, 3600)
-    minutes, seconds = divmod(rem, 60)
-    print("{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
+    # end = time.time()
+    # hours, rem = divmod(end-start, 3600)
+    # minutes, seconds = divmod(rem, 60)
+    # print("{:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
     # Append at the end of file
-    file_object.write("\n time it took to run jumbot model with chicago to wien is {:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
-    # Close the file
-    file_object.close()
+    # file_object.write("\n time it took to run emd model with 8 batchsize {:0>2}:{:0>2}:{:05.2f}".format(int(hours),int(minutes),seconds))
+    # # Close the file
+    # file_object.close()
 
     

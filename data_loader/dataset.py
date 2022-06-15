@@ -280,12 +280,16 @@ class Dataset():
     def array_torch(self):
         if os.path.exists("data_loader/npy/Xt_chicago.npy") and os.path.exists("data_loader/npy/Yt_chicago.npy") and os.path.exists("data_loader/npy/Xs_wien.npy"):
             self.Xt_train  = (np.load(self.data_folder + "/npy/Xtest_chicago.npy"))/255
+            self.Xt_train =self.Xt_train[:,:3,:,:]
             # self.Xt_train  = ((np.load(self.data_folder + "npy/Xt_train.npy"))[:,:3,:,:])/255
             self.Yt_train   = np.load(self.data_folder + "/npy/Ytest_chicago.npy")
+            self.Yt_train =self.Yt_train[:,:3,:,:]
             # self.Yt_train  = np.load(self.data_folder + "npy/Yt_train.npy")
             self.Xs_train = (np.load(self.data_folder + "/npy/Xtest_wien.npy"))/255
+            self.Xs_train =self.Xs_train[:,:3,:,:]
             # self.Xs_train  = ((np.load(self.data_folder + "npy/Xs_train.npy"))[:,:3,:,:])/255
             self.Ys_train = np.load(self.data_folder + "/npy/Ytest_wien.npy")
+            self.Ys_train =self.Ys_train[:,:3,:,:]
             # self.Ys_train  = np.load(self.data_folder + "npy/Ys_train.npy")
             
             print("----------------------ready to use dataset--------------")
@@ -321,7 +325,7 @@ class Dataset():
             print(f'Number of source validation examples: {len(self.source_valid_partly)}')
             #create dataloader
             self.source_dataloader = DataLoader(self.source_train_partly,batch_size=config["batchsize"],shuffle = True,pin_memory= True,worker_init_fn=np.random.seed(42))
-            self.valid_source_dataloader = DataLoader(self.source_valid_partly,batch_size=config["batchsize"],shuffle = True,pin_memory= True,worker_init_fn=np.random.seed(42))
+            self.valid_source_dataloader = DataLoader(self.source_valid_partly,batch_size=config["batchsize"],shuffle = False,pin_memory= True,worker_init_fn=np.random.seed(42))
             print("Finally atleast train and valid source dataloader section works 😌 ")
             
             
@@ -340,7 +344,7 @@ class Dataset():
             print(f'Number of target validation examples: {len(self.target_valid_partly)}')
             #create dataloader
             self.target_dataloader = DataLoader(self.target_train_partly,batch_size=config["batchsize"],shuffle = True,pin_memory= True,worker_init_fn=np.random.seed(42)) 
-            self.valid_target_dataloader = DataLoader(self.target_valid_partly,batch_size=config["batchsize"],shuffle = True,pin_memory= True,worker_init_fn=np.random.seed(42))
+            self.valid_target_dataloader = DataLoader(self.target_valid_partly,batch_size=config["batchsize"],shuffle = False,pin_memory= True,worker_init_fn=np.random.seed(42))
             print("Finally atleast train and valid target dataloader section works 😌 ")
             
             
@@ -387,8 +391,10 @@ class Dataset():
             
         elif self.for_what == "testing":
             if os.path.exists(self.data_folder + "/npy/Xtest_chicago.npy"):
-                self.Xtest = np.load(self.data_folder + "npy/Xt_train.npy")[:,:3,:,:]
-                self.Ytest = np.load(self.data_folder + "npy/Yt_train.npy")
+                self.Xtest = np.load(self.data_folder + "npy/Xtest.npy")/255
+                self.Xtest =self.Xtest[:,:3,:,:]
+                self.Ytest = np.load(self.data_folder + "npy/Ytest.npy")
+                self.Ytest =self.Ytest[:,:3,:,:]
                 # percentage=(np.count_nonzero(self.Ytest.reshape(self.Ytest.shape[0],-1),axis=1)/(256*256))*100
                 # sel_index=np.where(percentage>1.0)
                 # # print(percentage)
@@ -408,7 +414,7 @@ class Dataset():
             self.tensor_xp = torch.Tensor(self.Xtest.astype(np.float16)) 
             self.tensor_yp = torch.Tensor(self.Ytest.astype(np.float16)) 
             self.tensor_test = TensorDataset(self.tensor_xp,self.tensor_yp) 
-            self.test_dataloader = DataLoader(self.tensor_test, batch_size=20,pin_memory= True,worker_init_fn=np.random.seed(0)) 
+            self.test_dataloader = DataLoader(self.tensor_test, batch_size=1,pin_memory= True,worker_init_fn=np.random.seed(0)) 
             print("Finally atleast test dataloader section works 😌")
         else:
             print("Please be sure you know what you are doing👀")

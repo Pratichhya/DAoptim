@@ -71,16 +71,22 @@ def main_hyper(trial):
     scaler = torch.cuda.amp.GradScaler()
     
     cfg = {
-        "n_epochs":50,
+        "n_epochs":30,
         "seed": 42,
-        "lr": trial.suggest_loguniform('lr', 1e-5, 1e-2),
+        # "lr": trial.suggest_loguniform('lr', 1e-5, 1e-2),
+        "lr": 1e-3,
         "momentum": 0.6,
         "optimizer": optim.Adam,
         "save_model": False,
-        'alpha':trial.suggest_uniform('alpha', 0.07, 5),
-        'lambda_t':trial.suggest_uniform('lambda_t', 0.001, 0.9),
-        'reg_m':trial.suggest_uniform('reg_m', 0.01, 0.09),
-        'reg':trial.suggest_uniform('reg', 0.01, 0.09)
+        # 'alpha':trial.suggest_categorical("alpha", [0.001,0.01,0.1,1.0,10,100,1000]),
+        'alpha':1,
+        'lambda_t':trial.suggest_categorical("alpha", [0.001,0.01,0.1,1.0,10,100,1000]),
+        # 'lambda_t': 0.4,
+        # 'lambda_t':trial.suggest_uniform('lambda_t', 0.001, 0.9),
+        # 'reg_m':trial.suggest_uniform('reg_m', 0.01, 1),
+        # 'reg':trial.suggest_uniform('reg', 0.01, 1),
+        'reg_m':0.06,
+        'reg':0.7
         
     }
 
@@ -96,11 +102,12 @@ def main_hyper(trial):
     f1 = []
     loss = []
     val_f1 =[]
+    send = []
     config["trial.number"] = trial.number
     
     '''reinit argument is necessary to call wandb.init method multiple times in the same process because objective is called multiple times in Optuna’s optimization.'''
     
-    wandb.init(project="optuna",  group=STUDY_NAME,config=cfg, reinit=True)
+    # wandb.init(project="all_v2",  config=cfg, reinit=True)
     
     for epoch in range(1, cfg["n_epochs"] + 1):
         print(f"in epoch {epoch}")
@@ -121,9 +128,9 @@ def main_hyper(trial):
         # print(f"Training IOU in average for epoch {str(epoch)} is {acc_mat[2]}")
         # print(f"f1 was {f1} and returned is{send}")
         del train_loss, acc_mat
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
         print("----------------------Evaluation phase-----------------------------")
-        val_acc_mat = Train.eval_epoch(
+        val_acc_mat = Train.val_epoch(
             net,
             val_source_dataloader,
             val_target_dataloader,
@@ -135,13 +142,14 @@ def main_hyper(trial):
         print(f"Evaluation F1 in average for epoch {str(epoch)} is {val_acc_mat[0]}")
         print(f"Evaluation Accuracy in average for epoch {str(epoch)} is {val_acc_mat[1]}")
         print(f"Evaluation IOU in average for epoch {str(epoch)} is {val_acc_mat[2]}")
-        send = val_acc_mat[0]
+        
+        send.append(val_acc_mat[0])
         # report validation accuracy to wandb
-        wandb.log(data={"validation accuracy": val_acc_mat[1],"validation F1": val_acc_mat[0]}, step=epoch)
-        del valid_loss, val_acc_mat
+        # wandb.log(data={"validation accuracy": val_acc_mat[1],"validation F1": val_acc_mat[0]}, step=epoch)
+        del val_acc_mat
     # if cfg["save_model"]:
     #     torch.save(model.state_dict(), "hyperparam.pt")
-    return send
+    return max(send)
 
 
 if __name__ == "__main__":
@@ -150,6 +158,6 @@ if __name__ == "__main__":
     study.optimize(func=main_hyper, n_trials=10)
     joblib.dump(
         study,
-        "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/model/opt_f1/all_hp_v0.pkl",
+        "/share/projects/erasmus/pratichhya_sharma/DAoptim/DAoptim/model/opt_f1/lambda_cat10.pkl",
     )
 
