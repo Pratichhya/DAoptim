@@ -1,0 +1,35 @@
+Unsupervised Domain Adaptation using Optimal Transport for Semantic Segmentation of Dwellings
+ Abstract [concise around 250-300 words], possible to follow implicit or explicit approach 
+Introduction and problem statement 
+Role of earth observation in humanitarian response
+Potential of computer vision/deep learning for automatic information retrieval
+Limitations of deep learning and constraints of annotated data availability,Time, resources, accessibility …
+ Limitation of normal transfer learning and why unsupervised domain adaptation is needed
+Methods for Domain Adaptation and why optimal transport
+Domain adaptation(DA) is considered a case of transfer learning that aims to train a model on a source dataset (referred to as the source domain) and infer on target data (referred to as the target domain) that is significantly different from the source domain [1]. The remote sensing application for semantic segmentation of dwelling relied heavily on SOTA supervised deep learning models. However, relying on a supervised method for humanitarian tasks can be challenging due to the limited availability of ground truth and expert knowledge about the ground situations or features. As a variant of domain adaptation, in unsupervised domain adaptation (UDA), data labels are available only in the source dataset but not in the target domain dataset, which is most likely the case for Remote Sensing Segmentation tasks. Several research works have attempted to perform unsupervised domain adaptation in various ways, as presented by Csurka et al. in their survey [2]. Whereas, in [3], Courty et al. advocate for finding the transformation between the source and target domains using optimal transport. The optimal transport-based model develops a transportation map that provides an optimal path to transport the data distributions from the source to the target domain.
+Even though different methods for knowledge transferability are suggested, optimal transport-based unsupervised domain adaptation is a relatively new idea in this field. In addition to this, research on the applicability of optimal transport based method for segmentation of remote sensing images has not been much explored until the time of this research work, according to our knowledge. Despite the fact that DA using an optimal transport-based method results in significant improvements for medical images [4] and computer vision datasets [5], its use and potential for adaptation in the segmentation of remote sensing images relatively new concept.
+Then contribution of the research (clear direction for readers)
+Thus,here we follow the concept proposed by Courty et al. in [3] with the DeepJDOT framework [6] but for semantic segmentation of dwellings from VHR images using DL techniques. This framework supports using mini-batches from both domains and jointly learning the embedding between them in a single framework. Later 2021, Fatras et al.presented a formulation of minibatch with unbalanced OT where the marginal constraints relaxation as JUMBOT in [7] was integrated as a solution to the problems regarding the high computational cost and undesirable pairing of samples during domain transportation. Hence, with reference to these framework, we aim to understand the applicability of unsupervised domain adaptation using optimal transport by developing a framework for semantic segmentation of dwellings (SegJUMBOT). The DeepJDOT [6] and JUMBOT [7] framework is taken as a baseline for further development and analysis of the SegJUMBOT framework.
+The contributions of the paper follow this pattern. First, we review the existing OT for DA formulations and introduce the one we implemented in Section 2, along with the dataset chosen for this task. The results obtained using the models discussed in Section 2 are analyzed in Section 3 to determine the applicability of domain adaptation in remote sensing applications with optimal transport methods. Our empirical results suggested that using JUMBOT might be a suitable method for DA in a remote sensing applications. This section also discusses a sensitivity analysis of the method's hyperparameters. This method's applicability and limitations are discussed in Section 4.
+ Methods
+Data and preprocessing
+Model implementation
+Evaluation metrics 
+ Results
+Any tabular and graphic outputs with textual description
+Hyperparameter sensitivity (optionally it can also be in a discussion section)      
+Discussion
+What's achieved and locate findings with wider literature(past work) 
+Conclusion 
+	Concluding remarks (more clear and concise) 
+References
+[1]	T. data science, “Understanding Domain Adaptation. Learn how to design a deep learning\ldots | by Harsh Maheshwari | Towards Data Science.” 2021. Accessed: Jan. 26, 2022. [Online]. Available: https://towardsdatascience.com/understanding-domain-adaptation-5baa723ac71f
+[2]	G. Csurka, R. Volpi, and B. Chidlovskii, “Unsupervised Domain Adaptation for Semantic Image Segmentation: a Comprehensive Survey,” 2021, [Online]. Available: http://arxiv.org/abs/2112.03241
+[3]	N. Courty, R. Flamary, D. Tuia, and A. Rakotomamonjy, “Optimal Transport for Domain Adaptation,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 39, no. 9, pp. 1853–1865, Sep. 2017, doi: 10.1109/TPAMI.2016.2615921.
+[4]	A. Ackaouy, N. Courty, E. Vallée, O. Commowick, C. Barillot, and F. Galassi, “Unsupervised Domain Adaptation With Optimal Transport in Multi-Site Segmentation of Multiple Sclerosis Lesions From MRI Data,” Front. Comput. Neurosci., vol. 14, p. 19, Mar. 2020, doi: 10.3389/FNCOM.2020.00019/BIBTEX.
+[5]	Y. Balaji, R. Chellappa, and S. Feizi, “Robust Optimal Transport with Applications in Generative Modeling and Domain Adaptation”, [Online]. Available: https://github.com/yogeshbalaji/robustOT.
+[6]	B. B. Damodaran, B. Kellenberger, R. Flamary, D. Tuia, and N. Courty, “DeepJDOT: Deep Joint Distribution Optimal Transport for Unsupervised Domain Adaptation,” in Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics), vol. 11208 LNCS, 2018, pp. 467–483. doi: 10.1007/978-3-030-01225-0_28.
+[7]	K. Fatras, T. Séjourné, N. Courty, and R. Flamary, “Unbalanced minibatch Optimal Transport; applications to Domain Adaptation,” Mar. 2021, [Online]. Available: http://arxiv.org/abs/2103.03606
+
+Supplementary material (if there is any)
+
