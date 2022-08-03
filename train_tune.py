@@ -89,6 +89,7 @@ class Train:
             #OT computation
             a, b = ot.unif(g_xs.size()[0]), ot.unif(g_xt.size()[0])
             del M_embed
+            # gamma_ot = ot.sinkhorn(a, b, M.detach().cpu().numpy(), reg_m)
             gamma_ot = ot.unbalanced.sinkhorn_knopp_unbalanced(a, b, M.detach().cpu().numpy(),reg, reg_m=reg_m) 
             gamma = torch.from_numpy(gamma_ot).float().cuda()  # Transport plan
             transfer_loss = torch.sum(gamma * M)

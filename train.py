@@ -43,9 +43,10 @@ class Train:
         f1_source,acc,IoU,K = 0.0,0.0,0.0,0.0
         f1_tr,acc_tr,IoU_tr,K_tr=0.0,0.0,0.0,0.0
         training_losses = classifier_losses = transfer_losses = target_losses = 0.0
-        alpha = config["alpha"]
-        lambda_t = config["lambda_t"]
-        reg_m = config["reg_m"]
+        alpha = 1 #config["alpha"]
+        # alpha = 0.1 #config["alpha"]
+        lambda_t = 100  #config["lambda_t"]
+        reg_m = 0.01 #config["reg_m"]
         net.train()
         iter_ = 0
 
@@ -96,9 +97,9 @@ class Train:
             #OT computation
             a, b = ot.unif(g_xs.size()[0]), ot.unif(g_xt.size()[0])
             del M_embed
-            # gamma_emd = ot.emd(a, b, M.detach().cpu().numpy())
+            # gamma_ot = ot.emd(a, b, M.detach().cpu().numpy())
             # gamma_ot = ot.sinkhorn(a, b, M.detach().cpu().numpy(), reg_m)
-            gamma_ot = ot.unbalanced.sinkhorn_knopp_unbalanced(a, b, M.detach().cpu().numpy(),0.5, reg_m=reg_m) 
+            gamma_ot = ot.unbalanced.sinkhorn_knopp_unbalanced(a, b, M.detach().cpu().numpy(),reg=0.01, reg_m=reg_m) 
             gamma = torch.from_numpy(gamma_ot).float().cuda()  # Transport plan
             transfer_loss = torch.sum(gamma * M)
 
@@ -148,10 +149,11 @@ class Train:
         f1_source, acc, IoU, K = 0.0, 0.0, 0.0, 0.0
         f1_t, acc_t, IoU_t, K_t = 0.0, 0.0, 0.0, 0.0
         training_losses = classifier_losses = transfer_losses = target_losses = 0.0
-        alpha = config["alpha"]
-        lambda_t = config["lambda_t"]
-        reg_m = config["reg_m"]
-        eval_itr = int(config["num_iterations"] *0.7)
+        alpha = 1 #config["alpha"]
+        # alpha = 0.1#config["alpha"]
+        lambda_t = 100 #config["lambda_t"]
+        reg_m = 0.01 #config["reg_m"]
+        # eval_itr = int(config["num_iterations"] *0.7)
         # for validation set
         with torch.no_grad():
             # set the model in evaluation mode
@@ -205,9 +207,9 @@ class Train:
                 # OT computation
                 val_a, val_b = ot.unif(val_g_xs.size()[0]), ot.unif(val_g_xt.size()[0])
                 del eval_M_embed
-                # val_gamma_emd = ot.emd(val_a, val_b, eval_M.detach().cpu().numpy())
+                # val_gamma_ot = ot.emd(val_a, val_b, eval_M.detach().cpu().numpy())
                 # val_gamma_ot = ot.sinkhorn(val_a, val_b, eval_M.detach().cpu().numpy(), reg_m )
-                val_gamma_ot = ot.unbalanced.sinkhorn_knopp_unbalanced(val_a, val_b, eval_M.detach().cpu().numpy(),0.5, reg_m=reg_m)
+                val_gamma_ot = ot.unbalanced.sinkhorn_knopp_unbalanced(val_a, val_b, eval_M.detach().cpu().numpy(),reg=0.01, reg_m=reg_m)
                 val_gamma = (torch.from_numpy(val_gamma_ot).float().cuda()
                 )  
                 # Transport plan

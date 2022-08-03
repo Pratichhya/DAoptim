@@ -42,7 +42,7 @@ else:
     device = torch.device('cpu')
 # model = UNet(config["n_channel"], config["n_classes"])
 # Choose whatever GPU device number you want
-model.load_state_dict(torch.load(config["model_path"] + "f1_segjdot_lr2.pt"))
+model.load_state_dict(torch.load(config["model_path"] + "simple_minawao.pt"))
 # model.load_state_dict(checkpoint['state_dict'], strict=False)
 
 # Make sure to call input = input.to(device) on any input tensors that you feed to the model
@@ -74,9 +74,9 @@ def predict():
             # # tiff.imwrite(os.path.join(prediction_path, f"rgb_{test_idx+1}" + ".tif"), rgb)
             # tiff.imwrite(os.path.join(ground_path, f"gt_{test_idx+1}" + ".tif"), gt)
             
-            images = wandb.Image(pred, caption="Top: Output, Bottom: Input")
-            gt = wandb.Image(gt, caption="Top: Output, Bottom: Input")
-            wandb.log({"Ground truth": gt,"Prediction": images})
+            # images = wandb.Image(pred, caption="Top: Output, Bottom: Input")
+            # gt = wandb.Image(gt, caption="Top: Output, Bottom: Input")
+            # wandb.log({"Ground truth": gt,"Prediction": images})
             #evaluation
             f1_test,acc_test,IoU_test,K_test =eval_metrics.f1_score(target,output)
             # f1_sci = f1_score(gt, pred, average=None)
@@ -101,12 +101,13 @@ def predict():
 
 
 if __name__ == "__main__":
-    wandb.login()
-    wandb.init(project="pred_test")
+    # wandb.login()
+    # wandb.init(project="pred_test")
+    predict()
     # Open a file with access mode 'a'
     # file_object = open(config["time_file"]+'time_taken.txt', 'a')
     # start = time.time()
-    predict()
+    # predict()
     # end = time.time()
     # hours, rem = divmod(end-start, 3600)
     # minutes, seconds = divmod(rem, 60)

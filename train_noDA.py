@@ -62,7 +62,7 @@ testing_loss = 0.0
 training_loss = 0.0
 validation_loss = 0.0
 mode = config["mode"]
-NUM_EPOCHS = 30
+NUM_EPOCHS = 50
 lrs = []
 
 # early stopping patience; how long to wait after last time validation loss improved.
@@ -184,10 +184,10 @@ def SimpleUnet(net):
         # print(f"Evaluation K in average for epoch {str(e)} is {acc_mat[3]}")
         wandb.log({'Val_Loss': valid_loss,'Val_F1': acc_mat[0],'Val_acc':acc_mat[1],'Val_IoU':t_acc_mat[2],'Train Loss': train_loss,'Train_F1': t_acc_mat[0],'Train_acc':t_acc_mat[1],'Train_IoU':t_acc_mat[2]})
         # Decay Learning Rate kanxi: check this
-        if e % 10 == 0:
-            scheduler.step()
+        # if e % 10 == 0:
+        #     scheduler.step()
         # Print Learning Rate
-        print("last learning rate:", scheduler.get_last_lr(), "LR:", scheduler.get_lr())
+        # print("last learning rate:", scheduler.get_last_lr(), "LR:", scheduler.get_lr())
         
         ## Early stopping
         print("###################### Early stopping ##########################")
@@ -198,11 +198,11 @@ def SimpleUnet(net):
             trigger_times += 1
             if test_f1 <= acc_mat[0]:
                 test_f1 = acc_mat[0]
-                torch.save(net.state_dict(), config["model_path"] + "f1_simple_all.pt")
+                torch.save(net.state_dict(), config["model_path"] + "f1_simple_minawao.pt")
             print("trigger times:", trigger_times)
             if trigger_times == patience:
                 print("Early stopping!\nStart to test process.")
-                torch.save(net.state_dict(), config["model_path"] + "es_simple_all.pt")
+                torch.save(net.state_dict(), config["model_path"] + "es_simple_minawao.pt")
         else:
             print(f"trigger times: {trigger_times}")
             the_last_loss = the_current_loss
@@ -210,12 +210,12 @@ def SimpleUnet(net):
         del valid_loss, acc_mat,train_loss, t_acc_mat
         # lrs.append(optimizer.param_groups[0]["lr"])
         # print("learning rates are:",lrs
-    torch.save(net.state_dict(), config["model_path"] + "simple_all.pt")
+    torch.save(net.state_dict(), config["model_path"] + "simple_minawao.pt")
     print("finished")
     
     
     
 if __name__ == "__main__":
     wandb.login()
-    wandb.init(project="simple")
+    wandb.init(project="simple_final")
     SimpleUnet(net)

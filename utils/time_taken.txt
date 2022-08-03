@@ -2,4 +2,15 @@
  time it took to run jumbot model with all VHR dataset is 23:54:25.75
  time it took to run jumbot model with all VHR dataset is 16:06:42.70
  time it took to run jumbot model with all minawao dataset is 03:41:49.96
- time it took to run jumbot model with chicago to wien is 15:28:33.13
+ time it took to run jumbot model with chica to wi is 15:28:33.13
+ time it took to run jumbot model with wien to chicago is 10:49:59.54
+ time it took to run jumbot model with chicago to wien is 06:57:29.22
+ time it took to run jumbot model is 04:15:28.09
+ time it took to run segjdot model with 16 batchsize 04:51:41.47
+ time it took to run segjdot model with 20 batchsize 03:38:20.37
+ time it took to run jumbot model with 20 batchsize 05:25:13.35
+ time it took to run jumbot model with 32 batchsize 05:43:56.15
+ time it took to run segjdot model with 32 batchsize 05:51:12.82
+ time it took to run segjdot model with 8 batchsize 08:37:42.33
+ time it took to run jumbot model with 8 batchsize 08:51:59.82
+ 
